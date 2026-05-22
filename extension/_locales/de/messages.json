@@ -260,5 +260,9 @@
         "example": "3"
       }
     }
+  },
+  "popupReportIssue": {
+    "message": "Problem melden",
+    "description": "Button um ein Banner-Erkennungsproblem auf GitHub zu melden"
   }
 }

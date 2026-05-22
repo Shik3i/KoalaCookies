@@ -40,6 +40,7 @@ async function init() {
   document.getElementById('disableDropdownBtn').addEventListener('click', toggleDisableDropdown);
   document.getElementById('copyLogBtn').addEventListener('click', copyLogToClipboard);
   document.getElementById('startPickerBtn').addEventListener('click', startPicker);
+  document.getElementById('reportIssueBtn').addEventListener('click', reportIssue);
 
   document.querySelectorAll('.disable-option').forEach(function(opt) {
     opt.addEventListener('click', function() {
@@ -132,6 +133,26 @@ function escapeHtml(str) {
   const div = document.createElement('div');
   div.textContent = str;
   return div.innerHTML.replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+
+function reportIssue() {
+  var manifest = chrome.runtime.getManifest();
+  var version = manifest.version;
+  var title = encodeURIComponent('[Bug] Cookie banner not handled on ' + (currentDomain || 'unknown'));
+  var body = encodeURIComponent(
+    '**Domain:** ' + (currentDomain || 'unknown') + '\n' +
+    '**Extension Version:** ' + version + '\n' +
+    '**Browser:** ' + (navigator.userAgent || 'unknown') + '\n\n' +
+    '**Description:**\n' +
+    'The cookie consent banner could not be rejected automatically.\n\n' +
+    '**Expected behavior:**\n' +
+    'The banner should be rejected.\n\n' +
+    '**Actual behavior:**\n' +
+    '(Describe what happened)\n\n' +
+    '**Screenshot (optional):**\n'
+  );
+  var url = 'https://github.com/Shik3i/KoalaCookies/issues/new?title=' + title + '&body=' + body + '&labels=bug';
+  chrome.tabs.create({ url: url });
 }
 
 function actionClass(action) {

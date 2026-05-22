@@ -260,5 +260,9 @@
         "example": "3"
       }
     }
+  },
+  "popupReportIssue": {
+    "message": "Report Issue",
+    "description": "Button to report a banner detection issue on GitHub"
   }
 }
