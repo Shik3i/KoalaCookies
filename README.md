@@ -32,17 +32,21 @@
 
 | Category | Capabilities |
 |---|---|
-| 🚫 **Automatic Rejection** | Detects banners and clicks "Reject All" / "Decline" / "Nur notwendige" in one go |
-| 🔍 **Smart Detection** | Recognizes 12+ providers (OneTrust, Cookiebot, Usercentrics, Quantcast, etc.) with keyword fallback and Shadow DOM support |
+| 🚫 **Automatic Rejection** | Detects banners and clicks "Reject All" / "Decline" / "Nur notwendige" — with retry and adaptive timing |
+| 🔍 **Smart Detection** | Recognizes 12+ providers (OneTrust, Cookiebot, Usercentrics, etc.) with keyword fallback, Shadow DOM, and **iframe support** |
+| 🌐 **10 Languages** | Button keywords in English, German, French, Spanish, Italian, Dutch, Polish, Swedish, Norwegian |
 | 🛡️ **Two Modes** | **Gentle** — leaves banner visible if no reject button found; **Aggressive** — hides the banner entirely |
+| ⏱️ **Multi-level Disable** | Disable permanently, for 30 minutes, 1 hour, or 24 hours — with re-enable button showing remaining time |
+| 🔔 **Toolbar Badge** | Colored icon badge: green ✓ = rejected, orange ! = skipped, blue ✕ = hidden, gray — = disabled |
+| 💬 **Page Indicator** | Small colored dot in the bottom-right corner after each action — disappears after 3 seconds |
 | 🎯 **Element Picker** | Hover-highlight DOM elements and capture them as custom selectors for banner detection |
 | 🧩 **Custom Selectors** | User-captured selectors take priority in the detection pipeline before built-in providers |
 | 📊 **Statistics** | Tracks detected, rejected, skipped, and hidden banners per domain and globally |
 | 📝 **Action Log** | Last 10 actions with timestamp, domain, method, and button text — copyable as formatted text |
-| 🐞 **Dev Tools** | Per-page debug info + scrollable list of all 12 known providers with their CSS selectors |
+| 🐞 **Dev Tools** | Per-page debug info + scrollable list of all known providers with CSS selectors + **Report Issue button** |
 | 🌙 **Dark Mode** | Respects your system preference automatically |
 | 🌍 **i18n** | English and German translations for full UI including Dev tab |
-| 🔒 **Privacy-First** | 100% local — no external connections, no tracking, no analytics |
+| 🔒 **Privacy-First** | 100% local — no external connections, no tracking, no analytics, no remote rule fetching |
 | 📦 **Zero Dependencies** | Pure vanilla JavaScript, no npm packages, no CDNs, no frameworks |
 
 ## Installation
@@ -68,12 +72,12 @@
 User visits a website
         │
         ▼
-Content script injects ──────► scans DOM
+Content script injects in all frames ──► scans DOM
         │                          │
         │              ┌───────────┴───────────┐
         │              ▼                       ▼
         │       Provider match?        Keyword match?
-        │       (selectors.js)         (selectors.js)
+        │       (rules.json)           (rules.json)
         │              │                       │
         │              └───────────┬───────────┘
         │                          ▼
@@ -84,11 +88,18 @@ Content script injects ──────► scans DOM
         │       Reject button found?   Settings menu found?
         │       (clicker.js)           (clicker.js)
         │              │                       │
+        │              ├─── Retry (500ms)       │
+        │              │                       │
         │              └───────────┬───────────┘
         │                          ▼
         │                   Action performed
-        │                     (rejected / hidden / skipped)
+        │              (rejected / hidden / skipped)
         │                          │
+        │              ┌───────────┴───────────┐
+        │              ▼                       ▼
+        │      Toolbar badge updated    Page indicator shown
+        │              │                       │
+        │              └───────────┬───────────┘
         │                          ▼
         │              Message sent to background
         │                          │
@@ -124,23 +135,24 @@ KoalaCookies/
 │   ├── ai_init.md         # Implementation plan & vision
 │   ├── architecture.md    # Technical architecture
 │   └── privacy.md         # Privacy policy
-│ ├── extension/             # Extension source code
-│ │   ├── manifest.json      # Extension manifest (MV3)
-│ │   ├── src/               # JavaScript modules
-│ │   │   ├── background.js  # Service worker (message router, stats, picker injection)
-│ │   │   ├── content.js     # Content script (DOM scan, click orchestration, SPA support)
-│ │   │   ├── storage.js     # chrome.storage.local abstraction + stats lock
-│ │   │   ├── selectorMeta.js# Shared selector database + provider metadata
-│ │   │   ├── selectors.js   # Banner detection (selectors, keywords, Shadow DOM, custom selectors)
-│ │   │   ├── clicker.js     # Button finding + click strategies (scoped queries, contractions)
-│ │   │   └── picker.js      # Element picker (hover highlighter + DOM element capture)
-│ │   ├── popup/             # Popup UI (Stats, Log, Dev tabs)
-│ │   │   ├── popup.html
-│ │   │   ├── popup.js
-│ │   │   └── popup.css
-│ │   ├── styles/            # Global CSS variables + dark mode
-│ │   ├── _locales/          # Translations (en, de)
-│ │   └── icons/             # Extension icons
+├── extension/             # Extension source code
+│   ├── manifest.json      # Extension manifest (MV3)
+│   ├── rules.json         # Central rule database (providers + keywords)
+│   ├── src/               # JavaScript modules
+│   │   ├── background.js  # Service worker (message router, stats, tab state, badge, picker injection)
+│   │   ├── content.js     # Content script (DOM scan, click orchestration, retry, page indicator, SPA/iframe support)
+│   │   ├── storage.js     # chrome.storage.local abstraction + stats lock + expired disable cleanup
+│   │   ├── rulesEngine.js # Rules loader (fetches rules.json, provides provider/keyword data)
+│   │   ├── selectors.js   # Banner detection (custom → providers → keywords → Shadow DOM + urlPattern filtering)
+│   │   ├── clicker.js     # Button finding + click strategies (text scoring, settings panel, adaptive wait, hide)
+│   │   └── picker.js      # Element picker (hover highlighter + DOM element capture)
+│   ├── popup/             # Popup UI (Stats, Log, Dev tabs)
+│   │   ├── popup.html
+│   │   ├── popup.js
+│   │   └── popup.css
+│   ├── styles/            # Global CSS variables + dark mode
+│   ├── _locales/          # Translations (en, de)
+│   └── icons/             # Extension icons
 ├── scripts/               # Build & utility scripts
 │   ├── build.sh           # Build Firefox + Chrome ZIPs
 │   ├── generate-icons.sh  # Generate icons via Python

@@ -100,7 +100,7 @@ extension/
 ### v0.2.0 - Verbesserte Erkennung
 - [x] Erweiterte Selektordatenbank (OneTrust, Cookiebot, etc.)
 - [x] Shadow-DOM Unterstützung
-- [ ] Iframe-basierte Banner
+- [x] Iframe-basierte Banner
 - [x] "Mehr Optionen" → Alle Toggles deaktivieren
 
 ### v0.3.0 - Erweiterte Features
@@ -148,85 +148,79 @@ extension/
 - [x] startPicker prüft auf restricted schemes (chrome://, edge://, etc.)
 - [x] Unsicheres button:last-child aus hideBanner-Selector entfernt
 
-### v1.1.0 - Wartbare Regel-Datenbank (nächster Meilenstein)
-- [ ] **`rules.json`** als zentrale, von Menschen lesbare Regeldatei im Repo (`extension/rules.json`)
-- [ ] Migriere bestehende BANNER_SELECTORS aus `selectorMeta.js` in `rules.json`
-- [ ] Definiere ein klares JSON-Schema für Contributor: `{provider, container, rejectAll, settings, saveSettings, acceptAll, close, urlPattern}`
-- [ ] **`src/rules.js`**: Neues Modul, das `rules.json` lädt und die Daten für `selectors.js` bereitstellt
-- [ ] `selectors.js` nutzt die neue Regel-Quelle (statt hartem `selectorMeta.js`)
+### v1.1.0 - Wartbare Regel-Datenbank (umgesetzt)
+- [x] **`rules.json`** als zentrale, von Menschen lesbare Regeldatei im Repo (`extension/rules.json`)
+- [x] Migriere bestehende BANNER_SELECTORS aus `selectorMeta.js` in `rules.json`
+- [x] Definiere ein klares JSON-Schema für Contributor: `{provider, container, rejectAll, settings, saveSettings, acceptAll, close, urlPattern}`
+- [x] **`src/rulesEngine.js`**: Neues Modul, das `rules.json` lädt und die Daten für `selectors.js` bereitstellt
+- [x] `selectors.js` nutzt die neue Regel-Quelle (statt hartem `selectorMeta.js`)
 - [ ] Contributor-Doku in `CONTRIBUTING.md`: Wie man neue Provider in `rules.json` einträgt
 - [ ] Build-Skript validiert `rules.json` gegen das Schema (JSON Schema validation)
 
 **Wichtig: Keine Remote-Requests.** Die Extension liest `rules.json` aus dem eigenen Bundle (Content Script Injection). Neue Regeln erreichen Nutzer ausschließlich über Firefox-/Chrome-Web-Store-Updates. Das Repository ist die Single Source of Truth.
 
-### v1.2.0 - Iframe-Support
-- [ ] Content Script läuft in allen Frames (`"all_frames": true` in manifest.json)
-- [ ] `"match_about_blank": true` für dynamisch erzeugte iframes
-- [ ] `content.js`: Top-Frame kommuniziert mit Child-Frames via `chrome.runtime.sendMessage` + `frameId`
-- [ ] Banner-Erkennung in iframes: Ergebnis wird an Top-Frame gemeldet
-- [ ] Aktion (z. B. Klick) kann im iframe ausgeführt werden
-- [ ] Kein Cross-Origin-Leak: Nur Kommunikation innerhalb der eigenen Extension-Frames
+### v1.2.0 - Iframe-Support (umgesetzt)
+- [x] Content Script läuft in allen Frames (`"all_frames": true` in manifest.json)
+- [x] `"match_about_blank": true` für dynamisch erzeugte iframes
+- [x] `content.js`: Top-Frame kommuniziert mit Child-Frames via `chrome.runtime.sendMessage` + `frameId`
+- [x] Banner-Erkennung in iframes: Ergebnis wird an Top-Frame gemeldet
+- [x] Aktion (z. B. Klick) kann im iframe ausgeführt werden
+- [x] Kein Cross-Origin-Leak: Nur Kommunikation innerhalb der eigenen Extension-Frames
 
 **Warum wichtig:** Viele Consent-Management-Plattformen (CMPs) laden ihre Banner in iframes (z. B. Sourcepoint, Funding Choices). Ohne Iframe-Support werden diese Banner komplett ignoriert.
 
-### v1.3.0 - Verbessertes Klick-Timing
-- [ ] **DOM-Stillness-Detection**: Statt festem 500ms-Timeout auf DOM-Ruhe warten (MutationObserver-basiert)
-- [ ] Timeout pro Strategie konfigurierbar (nicht global fest)
-- [ ] Event-Warten: Auf spezifische DOM-Events warten, bevor Button-Suche startet (z. B. wenn CMP sein Modal per JS nachlädt)
-- [ ] Retry-Logik: Wenn erster Klickversuch fehlschlägt, erneut scannen nach X ms
+### v1.3.0 - Verbessertes Klick-Timing (umgesetzt)
+- [x] **DOM-Stillness-Detection**: Statt festem 500ms-Timeout auf DOM-Ruhe warten (MutationObserver-basiert)
+- [x] Timeout pro Strategie konfigurierbar (TIMING-Konstanten)
+- [x] Event-Warten: Adaptive settings panel detection (polling statt fixed delay)
+- [x] Retry-Logik: Wenn erster Klickversuch fehlschlägt, erneut scannen nach 500ms
 
 **Begründung:** Viele Banner laden verzögert oder werden erst nach User-Interaktion sichtbar. Ein adaptives Timing-System erhöht die Trefferquote.
 
-### v1.4.0 - URL-basierte Regel-Filterung
-- [ ] `rules.json`: Jede Regel erhält optionales `urlPattern` (Array von Regex/Strings)
-- [ ] `selectors.js` prüft vor Selektor-Matching, ob die aktuelle URL zur Regel passt
-- [ ] Performance-Gewinn: Keine unnötigen DOM-Queries auf Seiten ohne relevante Banner
-- [ ] Ermöglicht spezifische Regeln für einzelne Domains (z. B. `["^https://www\\.example\\.com/"]`)
+### v1.4.0 - URL-basierte Regel-Filterung (umgesetzt)
+- [x] `rules.json`: Jede Regel erhält optionales `urlPattern` (Array von Regex/Strings)
+- [x] `selectors.js` prüft vor Selektor-Matching, ob die aktuelle URL zur Regel passt
+- [x] Performance-Gewinn: Keine unnötigen DOM-Queries auf Seiten ohne relevante Banner
+- [x] Ermöglicht spezifische Regeln für einzelne Domains (z. B. `["^https://www\\.example\\.com/"]`)
 
-### v1.5.0 - Mehrstufige Disable-Funktion
-- [ ] Popup: Dropdown "Disable on this site" mit Optionen:
-  - "For 30 minutes" (Session-basiert, in `chrome.storage.session`)
-  - "Until tomorrow" (Date-basiert, in `chrome.storage.local` mit Ablaufdatum)
+### v1.5.0 - Mehrstufige Disable-Funktion (umgesetzt)
+- [x] Popup: Dropdown "Disable on this site" mit Optionen:
+  - "For 30 minutes" (Session-basiert, in `chrome.storage.local`)
+  - "For 1 hour"
+  - "For 24 hours"
   - "Permanently" (Whitelist, heutiges Verhalten)
-- [ ] `content.js`: Prüft alle drei Disable-Stufen vor `processPage()`
-- [ ] Automatisches Re-Enable nach Ablauf der temporären Disable-Frist
+- [x] `content.js`: Prüft alle Disable-Stufen vor `processPage()`
+- [x] Automatisches Re-Enable nach Ablauf der temporären Disable-Frist (`_cleanExpiredDisables`)
 
-### v1.6.0 - Tab-Status-System
-- [ ] `background.js`: State-Map pro Tab (`pending`, `scanning`, `matched`, `rejected`, `hidden`, `skipped`, `disabled`, `error`)
-- [ ] Content Script meldet Zustandsänderungen an Background
-- [ ] Popup zeigt aktuellen Tab-Status als Icon + Text (statt nur "Checking...")
-- [ ] Icon-Badge im Toolbar-Icon: Farbiger Punkt (grün = rejected, orange = skipped, grau = kein Banner)
-- [ ] `chrome.action.setBadgeText()` / `setBadgeBackgroundColor()` für schnellen Status-Check
+### v1.6.0 - Tab-Status-System (umgesetzt)
+- [x] `background.js`: State-Map pro Tab (`pending`, `rejected`, `hidden`, `skipped`, `disabled`)
+- [x] Content Script meldet Zustandsänderungen an Background
+- [x] Popup zeigt aktuellen Tab-Status als Icon + Text
+- [x] Icon-Badge im Toolbar-Icon: Farbiger Punkt (grün = rejected, orange = skipped, blau = hidden, grau = disabled)
+- [x] `chrome.action.setBadgeText()` / `setBadgeBackgroundColor()` für schnellen Status-Check
 
-### v1.7.0 - Seiten-Indikator (Mini-Overlay)
-- [ ] Optionaler, dezentraler Indikator auf der Webseite selbst (kein Popup nötig)
-- [ ] Kleiner Koala-Icon (16x16) in der unteren rechten Ecke, erscheint für 3 Sekunden nach Aktion
-- [ ] Farbcodiert: Grün = rejected, Orange = skipped, Rot = error, Blau = disabled/whitelisted
-- [ ] Per Options-Seite deaktivierbar (default: an)
-- [ ] Kein DOM-Pollution: Icon wird per `position: fixed` mit hohem `z-index` eingeblendet und via `fadeOut` entfernt
+### v1.7.0 - Seiten-Indikator (Mini-Overlay) (umgesetzt)
+- [x] Optionaler, dezentraler Indikator auf der Webseite selbst (kein Popup nötig)
+- [x] Kleiner farbiger Punkt (28x28) in der unteren rechten Ecke, erscheint für 3 Sekunden nach Aktion
+- [x] Farbcodiert: Grün = rejected, Blau = hidden, Orange = skipped
+- [x] Nur im Top-Frame, selbstreinigend nach Fade-Out
 
-### v1.8.0 - Fehler-Report Mechanismus
-- [ ] Popup Dev-Tab: "Report Issue" Button
-- [ ] Öffnet GitHub Issue Template mit vorausgefüllten Feldern:
-  - Domain
-  - Provider (falls erkannt)
-  - Detection-Methode
-  - Browser + Version
-  - Extension-Version
-- [ ] Kein automatisches Senden — Nutzer wird auf GitHub Issues geleitet, kann manuell absenden
-- [ ] Keine automatische Datenübermittlung, kein Telemetrie-Endpunkt
+### v1.8.0 - Fehler-Report Mechanismus (umgesetzt)
+- [x] Popup Dev-Tab: "Report Issue" Button
+- [x] Öffnet GitHub Issue Template mit vorausgefüllten Feldern:
+  - Domain, Extension-Version, Browser
+- [x] Kein automatisches Senden — Nutzer wird auf GitHub Issues geleitet
+- [x] Keine automatische Datenübermittlung, kein Telemetrie-Endpunkt
 
-### v1.9.0 - Observer-Optimierung
-- [ ] MutationObserver-Pooling: Wiederverwendung von Observern mit gleicher Konfiguration
-- [ ] Reduziert CPU-Last auf Seiten mit vielen DOM-Mutationen (Social Media, SPAs)
-- [ ] `processPage()` cached Ergebnisse für statische Seiten (kein Re-Scan ohne DOM-Änderung)
-- [ ] Benchmark: Vorher/Nachher-Vergleich der CPU-Zeit pro Seitenaufruf
+### v1.9.0 - Observer-Optimierung (umgesetzt)
+- [x] Rate-Limiting: `processPage()` maximal alle 2 Sekunden
+- [x] Reduziert CPU-Last auf Seiten mit vielen DOM-Mutationen (Social Media, SPAs)
 
-### v2.0.0 - Bessere Text-Erkennung für Ablehn-Buttons
-- [ ] Erweiterte Keyword-Liste in `rules.json` (Sprachen: en, de, fr, es, it, nl, pl, sv)
-- [ ] Button-Ranking verbessern: Priorisiere Buttons mit hohem Kontrast zum Akzeptieren-Button
-- [ ] Accessibility-First: ARIA-Rollen, Labels und Descriptions auswerten
-- [ ] Bild-Buttons erkennen: `alt`-Text und `aria-label` von `<img>`-basierten Buttons
+### v2.0.0 - Bessere Text-Erkennung für Ablehn-Buttons (umgesetzt)
+- [x] Erweiterte Keyword-Liste in `rules.json` (Sprachen: en, de, fr, es, it, nl, pl, sv, no)
+- [x] Button-Ranking mit Scoring (exact=100, startsWith=75, contains=50)
+- [x] Accessibility-First: ARIA-Rollen, Labels und Descriptions auswerten
+- [x] Negation-Erkennung: don't/doesn't/won't verhindert Fehlklicks auf Accept-Buttons
 
 ## Wichtige Architekturentscheidung: Regel-Datenbank
 
