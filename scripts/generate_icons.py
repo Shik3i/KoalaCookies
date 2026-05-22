@@ -122,8 +122,8 @@ def generate_icon(size):
         cheek_x = size * 0.1
         cheek_y = cy + size * 0.04
         cheek_color = (220, 140, 140, 100)
-        draw_circle(cx - cheek_x, cheek_y, cheek_size, pixels, w, h, cheek_color[:3])
-        draw_circle(cx + cheek_x, cheek_y, cheek_size, pixels, w, h, cheek_color[:3])
+        draw_circle(cx - cheek_x, cheek_y, cheek_size, pixels, w, h, cheek_color)
+        draw_circle(cx + cheek_x, cheek_y, cheek_size, pixels, w, h, cheek_color)
 
     return create_png(w, h, pixels)
 

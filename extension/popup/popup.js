@@ -10,7 +10,7 @@ async function init() {
       currentDomain = url.hostname;
       document.getElementById('currentDomain').textContent = currentDomain;
     } catch {
-      document.getElementById('currentDomain').textContent = 'Unavailable';
+      document.getElementById('currentDomain').textContent = chrome.i18n.getMessage('popupUnavailable');
     }
   }
 
@@ -29,7 +29,7 @@ async function sendMessage(msg) {
     return await chrome.runtime.sendMessage(msg);
   } catch (err) {
     console.error('KoalaCookies: sendMessage failed', err);
-    showToast('Connection error');
+    showToast(chrome.i18n.getMessage('popupToastConnectionError'));
     return null;
   }
 }
@@ -67,14 +67,14 @@ async function loadSettings() {
 async function onModeChange(e) {
   const mode = e.target.value;
   await sendMessage({ type: 'setMode', mode });
-  showToast('Mode updated');
+  showToast(chrome.i18n.getMessage('popupToastModeUpdated'));
 }
 
 async function onResetStats() {
   if (confirm('Reset all statistics? This cannot be undone.')) {
     await sendMessage({ type: 'resetStats' });
     await loadStats();
-    showToast('Statistics reset');
+    showToast(chrome.i18n.getMessage('popupToastStatsReset'));
   }
 }
 
@@ -89,10 +89,10 @@ async function onToggleWhitelist() {
 
   if (isWhitelisted) {
     await sendMessage({ type: 'removeFromWhitelist', domain: currentDomain });
-    showToast('Removed from whitelist');
+    showToast(chrome.i18n.getMessage('popupToastRemovedWhitelist'));
   } else {
     await sendMessage({ type: 'addToWhitelist', domain: currentDomain });
-    showToast('Added to whitelist');
+    showToast(chrome.i18n.getMessage('popupToastAddedWhitelist'));
   }
 
   await updateWhitelistButton();
@@ -109,10 +109,10 @@ async function updateWhitelistButton() {
   const actionSpan = document.getElementById('whitelistAction');
 
   if (isWhitelisted) {
-    actionSpan.textContent = 'Remove from';
+    actionSpan.textContent = chrome.i18n.getMessage('popupWhitelistRemove');
     btn.classList.add('btn-warning');
   } else {
-    actionSpan.textContent = 'Add to';
+    actionSpan.textContent = chrome.i18n.getMessage('popupWhitelistAdd');
     btn.classList.remove('btn-warning');
   }
 }
@@ -128,7 +128,8 @@ async function updateDomainStatus() {
   if (whitelist.includes(currentDomain)) {
     statusEl.className = 'domain-status status-disabled';
     statusEl.querySelector('.status-icon').textContent = '🚫';
-    statusEl.querySelector('.status-text').textContent = 'Whitelisted - No action';
+    statusEl.querySelector('.status-text').textContent =
+      chrome.i18n.getMessage('popupStatusWhitelisted');
   } else {
     const domainStats = popupData.stats.byDomain?.[currentDomain];
     if (domainStats && domainStats.detected > 0) {
@@ -136,22 +137,23 @@ async function updateDomainStatus() {
         statusEl.className = 'domain-status status-success';
         statusEl.querySelector('.status-icon').textContent = '✅';
         statusEl.querySelector('.status-text').textContent =
-          `Banner rejected (${domainStats.rejected} time(s))`;
+          chrome.i18n.getMessage('popupStatusBannerRejected', [String(domainStats.rejected)]);
       } else if (domainStats.hidden > 0) {
         statusEl.className = 'domain-status status-info';
         statusEl.querySelector('.status-icon').textContent = '👻';
         statusEl.querySelector('.status-text').textContent =
-          'Banner hidden';
+          chrome.i18n.getMessage('popupStatusBannerHidden');
       } else if (domainStats.skipped > 0) {
         statusEl.className = 'domain-status status-warning';
         statusEl.querySelector('.status-icon').textContent = '⚠️';
         statusEl.querySelector('.status-text').textContent =
-          'Banner skipped - Manual action needed';
+          chrome.i18n.getMessage('popupStatusBannerSkipped');
       }
     } else {
       statusEl.className = 'domain-status status-neutral';
       statusEl.querySelector('.status-icon').textContent = '🔍';
-      statusEl.querySelector('.status-text').textContent = 'No banner detected yet';
+      statusEl.querySelector('.status-text').textContent =
+        chrome.i18n.getMessage('popupStatusNoBanner');
     }
   }
 }

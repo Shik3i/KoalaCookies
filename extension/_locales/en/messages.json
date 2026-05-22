@@ -2,5 +2,63 @@
   "extensionDescription": {
     "message": "Automatically reject cookie consent banners. Privacy-first, open source.",
     "description": "Description of the extension"
+  },
+  "popupUnavailable": {
+    "message": "Unavailable",
+    "description": "Shown when the current page URL cannot be determined"
+  },
+  "popupToastModeUpdated": {
+    "message": "Mode updated",
+    "description": "Toast shown after mode switch"
+  },
+  "popupToastStatsReset": {
+    "message": "Statistics reset",
+    "description": "Toast shown after resetting statistics"
+  },
+  "popupToastRemovedWhitelist": {
+    "message": "Removed from whitelist",
+    "description": "Toast shown after removing domain from whitelist"
+  },
+  "popupToastAddedWhitelist": {
+    "message": "Added to whitelist",
+    "description": "Toast shown after adding domain to whitelist"
+  },
+  "popupToastConnectionError": {
+    "message": "Connection error",
+    "description": "Toast shown when background communication fails"
+  },
+  "popupStatusWhitelisted": {
+    "message": "Whitelisted - No action",
+    "description": "Domain status when the current site is whitelisted"
+  },
+  "popupStatusBannerRejected": {
+    "message": "Banner rejected ($COUNT$ time(s))",
+    "description": "Domain status when a banner was successfully rejected",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "popupStatusBannerHidden": {
+    "message": "Banner hidden",
+    "description": "Domain status when a banner was hidden in aggressive mode"
+  },
+  "popupStatusBannerSkipped": {
+    "message": "Banner skipped - Manual action needed",
+    "description": "Domain status when a banner was left visible"
+  },
+  "popupWhitelistRemove": {
+    "message": "Remove from",
+    "description": "Button text to remove domain from whitelist"
+  },
+  "popupWhitelistAdd": {
+    "message": "Add to",
+    "description": "Button text to add domain to whitelist"
+  },
+  "popupStatusNoBanner": {
+    "message": "No banner detected yet",
+    "description": "Domain status when no banner has been seen on this site"
   }
 }

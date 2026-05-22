@@ -83,6 +83,7 @@ function setupObserver() {
 }
 
 function start() {
+  // document_idle guarantees readyState is complete, kept as safety fallback
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
       setTimeout(processPage, 800);

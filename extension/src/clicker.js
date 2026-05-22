@@ -1,4 +1,4 @@
-const REJECT_TEXTS_EN = [
+const REJECT_TEXTS = [
   'reject all',
   'reject all cookies',
   'reject non-essential',
@@ -93,7 +93,7 @@ function isAcceptButton(text, matchedText) {
   const acceptIndicators = [
     'accept all', 'accept all cookies', 'agree', 'allow all',
     'zustimmen', 'alle akzeptieren', 'einverstanden',
-    'ok', 'okay', 'got it', 'i agree'
+    'got it', 'i agree'
   ];
 
   if (acceptIndicators.some(indicator => text.includes(indicator) && !text.includes('do not'))) {
@@ -123,7 +123,7 @@ function clickRejectAll(bannerResult) {
     }
   }
 
-  const textButton = findButtonByText(container, REJECT_TEXTS_EN);
+  const textButton = findButtonByText(container, REJECT_TEXTS);
   if (textButton) {
     textButton.click();
     return { method: 'text_match', text: textButton.textContent.trim() };
@@ -261,5 +261,5 @@ function hideBanner(bannerResult) {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { clickRejectAll, clickSettingsAndRejectAll, hideBanner, findButtonByText, REJECT_TEXTS_EN };
+  module.exports = { clickRejectAll, clickSettingsAndRejectAll, hideBanner, findButtonByText, REJECT_TEXTS };
 }

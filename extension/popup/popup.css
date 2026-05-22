@@ -36,7 +36,6 @@ body {
   background: var(--color-bg);
   color: var(--color-text);
   width: 360px;
-  min-height: 480px;
   line-height: 1.5;
 }
 

@@ -2,5 +2,63 @@
   "extensionDescription": {
     "message": "Lehnt Cookie-Banner automatisch ab. Privacy-First, Open Source.",
     "description": "Beschreibung der Erweiterung"
+  },
+  "popupUnavailable": {
+    "message": "Nicht verfügbar",
+    "description": "Angezeigt, wenn die URL der aktuellen Seite nicht ermittelt werden kann"
+  },
+  "popupToastModeUpdated": {
+    "message": "Modus aktualisiert",
+    "description": "Toast nach Modus-Wechsel"
+  },
+  "popupToastStatsReset": {
+    "message": "Statistiken zurückgesetzt",
+    "description": "Toast nach Zurücksetzen der Statistiken"
+  },
+  "popupToastRemovedWhitelist": {
+    "message": "Von Whitelist entfernt",
+    "description": "Toast nach Entfernen einer Domain von der Whitelist"
+  },
+  "popupToastAddedWhitelist": {
+    "message": "Zur Whitelist hinzugefügt",
+    "description": "Toast nach Hinzufügen einer Domain zur Whitelist"
+  },
+  "popupToastConnectionError": {
+    "message": "Verbindungsfehler",
+    "description": "Toast bei fehlgeschlagener Hintergrund-Kommunikation"
+  },
+  "popupStatusWhitelisted": {
+    "message": "Whitelist - Keine Aktion",
+    "description": "Domain-Status wenn die aktuelle Seite auf der Whitelist steht"
+  },
+  "popupStatusBannerRejected": {
+    "message": "Banner abgelehnt ($COUNT$ mal)",
+    "description": "Domain-Status wenn ein Banner erfolgreich abgelehnt wurde",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
+  "popupStatusBannerHidden": {
+    "message": "Banner ausgeblendet",
+    "description": "Domain-Status wenn ein Banner im aggressiven Modus ausgeblendet wurde"
+  },
+  "popupStatusBannerSkipped": {
+    "message": "Banner übersprungen - Manuelle Aktion nötig",
+    "description": "Domain-Status wenn ein Banner sichtbar gelassen wurde"
+  },
+  "popupWhitelistRemove": {
+    "message": "Entfernen von",
+    "description": "Button-Text zum Entfernen einer Domain von der Whitelist"
+  },
+  "popupWhitelistAdd": {
+    "message": "Hinzufügen zu",
+    "description": "Button-Text zum Hinzufügen einer Domain zur Whitelist"
+  },
+  "popupStatusNoBanner": {
+    "message": "Noch kein Banner erkannt",
+    "description": "Domain-Status wenn auf dieser Seite noch kein Banner gesehen wurde"
   }
 }
