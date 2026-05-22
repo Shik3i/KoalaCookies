@@ -4,6 +4,65 @@ try {
   console.error('KoalaCookies: Failed to load modules', e);
 }
 
+var tabStates = {};
+
+var BADGE_COLORS = {
+  rejected: '#2e7d32',
+  hidden: '#1565c0',
+  skipped: '#f57c00',
+  disabled: '#9e9e9e',
+  no_banner: '#9e9e9e',
+  error: '#c62828'
+};
+
+var BADGE_SYMBOLS = {
+  rejected: '✓',
+  hidden: '✕',
+  skipped: '!',
+  disabled: '—',
+  no_banner: '',
+  error: '✕'
+};
+
+function _setTabBadge(tabId, state) {
+  var color = BADGE_COLORS[state] || '#9e9e9e';
+  var symbol = BADGE_SYMBOLS[state] || '';
+  chrome.action.setBadgeBackgroundColor({ tabId: tabId, color: color }).catch(function(){});
+  chrome.action.setBadgeText({ tabId: tabId, text: symbol }).catch(function(){});
+}
+
+function _updateTabState(tabId, state, domain) {
+  if (!tabId || tabId < 0) return;
+  tabStates[tabId] = { state: state, domain: domain, timestamp: Date.now() };
+  _setTabBadge(tabId, state);
+}
+
+function _clearTabState(tabId) {
+  delete tabStates[tabId];
+  chrome.action.setBadgeText({ tabId: tabId, text: '' }).catch(function(){});
+}
+
+function _getTabState(tabId) {
+  return tabStates[tabId] || null;
+}
+
+chrome.tabs.onRemoved.addListener(function(tabId) {
+  _clearTabState(tabId);
+});
+
+chrome.tabs.onActivated.addListener(function(activeInfo) {
+  var state = _getTabState(activeInfo.tabId);
+  if (state) {
+    _setTabBadge(activeInfo.tabId, state.state);
+  }
+});
+
+chrome.tabs.onUpdated.addListener(function(tabId, changeInfo) {
+  if (changeInfo.url) {
+    _clearTabState(tabId);
+  }
+});
+
 const Service = {
   async getStatsForPopup() {
     const stats = await Storage.getStats();
@@ -28,6 +87,34 @@ const Service = {
       whitelist.push(domain);
       await Storage.set('whitelist', whitelist);
     }
+    await Service._setActiveTabDisabled(domain);
+  },
+
+  async enableDomain(domain) {
+    const whitelist = await Storage.get('whitelist');
+    const wlIdx = whitelist.indexOf(domain);
+    if (wlIdx !== -1) {
+      whitelist.splice(wlIdx, 1);
+      await Storage.set('whitelist', whitelist);
+    }
+
+    const disabledUntil = await Storage.get('disabledUntil');
+    if (disabledUntil[domain]) {
+      delete disabledUntil[domain];
+      await Storage.set('disabledUntil', disabledUntil);
+    }
+
+    try {
+      var tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+      for (var i = 0; i < tabs.length; i++) {
+        try {
+          var url = new URL(tabs[i].url);
+          if (url.hostname === domain) {
+            _clearTabState(tabs[i].id);
+          }
+        } catch (e) {}
+      }
+    } catch (e) {}
   },
 
   async disableDomain(domain, durationMs) {
@@ -45,6 +132,22 @@ const Service = {
     const disabledUntil = await Storage.get('disabledUntil');
     disabledUntil[domain] = Date.now() + durationMs;
     await Storage.set('disabledUntil', disabledUntil);
+
+    await Service._setActiveTabDisabled(domain);
+  },
+
+  async _setActiveTabDisabled(domain) {
+    try {
+      var tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+      for (var i = 0; i < tabs.length; i++) {
+        try {
+          var url = new URL(tabs[i].url);
+          if (url.hostname === domain) {
+            _updateTabState(tabs[i].id, 'disabled', domain);
+          }
+        } catch (e) {}
+      }
+    } catch (e) {}
   },
 
   async enableDomain(domain) {
@@ -121,6 +224,10 @@ const Service = {
       update.skipped = true;
     }
     await Storage.updateStats(domain, update);
+
+    if (sender && sender.tab && sender.tab.id) {
+      _updateTabState(sender.tab.id, action, domain);
+    }
   },
 
   async getActionLog() {
@@ -187,6 +294,10 @@ const Service = {
     const all = (await chrome.storage.local.get('customSelectors')).customSelectors || [];
     all.splice(index, 1);
     await chrome.storage.local.set({ customSelectors: all });
+  },
+
+  async getTabStateForPopup(tabId) {
+    return _getTabState(tabId);
   }
 };
 
@@ -206,6 +317,23 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }).then(stats => {
       sendResponse({ success: true, stats });
     }).catch(e => {
+      sendResponse({ success: false, error: e.message });
+    });
+    return true;
+  }
+
+  if (message.type === 'bannerDisabled') {
+    if (sender && sender.tab && sender.tab.id) {
+      _updateTabState(sender.tab.id, 'disabled', message.domain);
+    }
+    sendResponse({ success: true });
+    return false;
+  }
+
+  if (message.type === 'getTabState') {
+    Service.getTabStateForPopup(message.tabId).then(function(state) {
+      sendResponse({ success: true, state: state });
+    }).catch(function(e) {
       sendResponse({ success: false, error: e.message });
     });
     return true;

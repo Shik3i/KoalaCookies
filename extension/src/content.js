@@ -33,11 +33,13 @@ async function processPage() {
   const domain = window.location.hostname;
 
   if (whitelist.includes(domain)) {
+    chrome.runtime.sendMessage({ type: 'bannerDisabled', domain: domain }).catch(function(){});
     return;
   }
 
   var until = disabledUntil[domain];
   if (until && Date.now() < until) {
+    chrome.runtime.sendMessage({ type: 'bannerDisabled', domain: domain }).catch(function(){});
     return;
   }
 
