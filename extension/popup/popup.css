@@ -499,6 +499,16 @@ body {
   color: var(--color-border);
 }
 
+.footer-github {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.github-icon {
+  flex-shrink: 0;
+}
+
 .toast {
   position: fixed;
   bottom: 16px;

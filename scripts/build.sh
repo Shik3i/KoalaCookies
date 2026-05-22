@@ -33,6 +33,15 @@ manifest.browser_specific_settings = {
 require('fs').writeFileSync(process.argv[1], JSON.stringify(manifest, null, 2));
 " "$FIREFOX_BUILD_DIR/manifest.json"
 
+# Inject version into popup.html
+node -e "
+const fs = require('fs');
+const [file, version] = process.argv.slice(1);
+let html = fs.readFileSync(file, 'utf8');
+html = html.replace(/__VERSION__/g, version);
+fs.writeFileSync(file, html);
+" "$FIREFOX_BUILD_DIR/popup/popup.html" "$VERSION"
+
 FIREFOX_ZIP="$RELEASE_DIR/koala_cookies_firefox_v${VERSION}.zip"
 (cd "$FIREFOX_BUILD_DIR" && zip -r "$FIREFOX_ZIP" . -x "*.DS_Store" "*/Thumbs.db")
 rm -rf "$FIREFOX_BUILD_DIR"
@@ -50,6 +59,15 @@ const manifest = require(process.argv[1]);
 delete manifest.browser_specific_settings;
 require('fs').writeFileSync(process.argv[1], JSON.stringify(manifest, null, 2));
 " "$CHROME_BUILD_DIR/manifest.json"
+
+# Inject version into popup.html
+node -e "
+const fs = require('fs');
+const [file, version] = process.argv.slice(1);
+let html = fs.readFileSync(file, 'utf8');
+html = html.replace(/__VERSION__/g, version);
+fs.writeFileSync(file, html);
+" "$CHROME_BUILD_DIR/popup/popup.html" "$VERSION"
 
 CHROME_ZIP="$RELEASE_DIR/koala_cookies_chrome_v${VERSION}.zip"
 (cd "$CHROME_BUILD_DIR" && zip -r "$CHROME_ZIP" . -x "*.DS_Store" "*/Thumbs.db")
