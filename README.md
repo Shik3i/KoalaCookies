@@ -137,12 +137,12 @@ KoalaCookies/
 │   └── privacy.md         # Privacy policy
 ├── extension/             # Extension source code
 │   ├── manifest.json      # Extension manifest (MV3)
-│   ├── rules.json         # Central rule database (providers + keywords)
+│   ├── rules/             # Rule database (providers + keywords)
 │   ├── src/               # JavaScript modules
 │   │   ├── background.js  # Service worker (message router, stats, tab state, badge, picker injection)
 │   │   ├── content.js     # Content script (DOM scan, click orchestration, retry, page indicator, SPA/iframe support)
 │   │   ├── storage.js     # chrome.storage.local abstraction + stats lock + expired disable cleanup
-│   │   ├── rulesEngine.js # Rules loader (fetches rules.json, provides provider/keyword data)
+│   │   ├── rulesEngine.js # Rules loader (fetches rules/rules.json from rules/ dir, provides provider/keyword data)
 │   │   ├── selectors.js   # Banner detection (custom → providers → keywords → Shadow DOM + urlPattern filtering)
 │   │   ├── clicker.js     # Button finding + click strategies (text scoring, settings panel, adaptive wait, hide)
 │   │   └── picker.js      # Element picker (hover highlighter + DOM element capture)

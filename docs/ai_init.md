@@ -47,7 +47,9 @@ KoalaCookies ist eine datenschutzfreundliche, quelloffene Browser-Erweiterung f�
 ```
 extension/
 ├── manifest.json          # Extension Manifest (MV3)
-├── rules.json             # Wartbare Banner-Regel-Datenbank (NEU)
+├── rules/                # Regel-Datenbank
+│   ├── rules.json            # Provider + Keywords
+│   └── README.md             # Dokumentation für Contributor
 ├── src/
 │   ├── background.js      # Service Worker
 │   ├── content.js         # Content Script (Orchestration)
@@ -149,15 +151,15 @@ extension/
 - [x] Unsicheres button:last-child aus hideBanner-Selector entfernt
 
 ### v1.1.0 - Wartbare Regel-Datenbank (umgesetzt)
-- [x] **`rules.json`** als zentrale, von Menschen lesbare Regeldatei im Repo (`extension/rules.json`)
-- [x] Migriere bestehende BANNER_SELECTORS aus `selectorMeta.js` in `rules.json`
+- [x] **`rules/rules.json`** als zentrale, von Menschen lesbare Regeldatei im Repo (`extension/rules/rules.json`)
+- [x] Migriere bestehende BANNER_SELECTORS aus `selectorMeta.js` in `rules/rules.json`
 - [x] Definiere ein klares JSON-Schema für Contributor: `{provider, container, rejectAll, settings, saveSettings, acceptAll, close, urlPattern}`
-- [x] **`src/rulesEngine.js`**: Neues Modul, das `rules.json` lädt und die Daten für `selectors.js` bereitstellt
+- [x] **`src/rulesEngine.js`**: Neues Modul, das `rules/rules.json` lädt und die Daten für `selectors.js` bereitstellt
 - [x] `selectors.js` nutzt die neue Regel-Quelle (statt hartem `selectorMeta.js`)
-- [ ] Contributor-Doku in `CONTRIBUTING.md`: Wie man neue Provider in `rules.json` einträgt
-- [ ] Build-Skript validiert `rules.json` gegen das Schema (JSON Schema validation)
+- [ ] Contributor-Doku in `CONTRIBUTING.md`: Wie man neue Provider in `rules/rules.json` einträgt
+- [ ] Build-Skript validiert `rules/rules.json` gegen das Schema (JSON Schema validation)
 
-**Wichtig: Keine Remote-Requests.** Die Extension liest `rules.json` aus dem eigenen Bundle (Content Script Injection). Neue Regeln erreichen Nutzer ausschließlich über Firefox-/Chrome-Web-Store-Updates. Das Repository ist die Single Source of Truth.
+**Wichtig: Keine Remote-Requests.** Die Extension liest `rules/rules.json` aus dem eigenen Bundle (Content Script Injection). Neue Regeln erreichen Nutzer ausschließlich über Firefox-/Chrome-Web-Store-Updates. Das Repository ist die Single Source of Truth.
 
 ### v1.2.0 - Iframe-Support (umgesetzt)
 - [x] Content Script läuft in allen Frames (`"all_frames": true` in manifest.json)
@@ -178,7 +180,7 @@ extension/
 **Begründung:** Viele Banner laden verzögert oder werden erst nach User-Interaktion sichtbar. Ein adaptives Timing-System erhöht die Trefferquote.
 
 ### v1.4.0 - URL-basierte Regel-Filterung (umgesetzt)
-- [x] `rules.json`: Jede Regel erhält optionales `urlPattern` (Array von Regex/Strings)
+- [x] `rules/rules.json`: Jede Regel erhält optionales `urlPattern` (Array von Regex/Strings)
 - [x] `selectors.js` prüft vor Selektor-Matching, ob die aktuelle URL zur Regel passt
 - [x] Performance-Gewinn: Keine unnötigen DOM-Queries auf Seiten ohne relevante Banner
 - [x] Ermöglicht spezifische Regeln für einzelne Domains (z. B. `["^https://www\\.example\\.com/"]`)
@@ -217,7 +219,7 @@ extension/
 - [x] Reduziert CPU-Last auf Seiten mit vielen DOM-Mutationen (Social Media, SPAs)
 
 ### v2.0.0 - Bessere Text-Erkennung für Ablehn-Buttons (umgesetzt)
-- [x] Erweiterte Keyword-Liste in `rules.json` (Sprachen: en, de, fr, es, it, nl, pl, sv, no)
+- [x] Erweiterte Keyword-Liste in `rules/rules.json` (Sprachen: en, de, fr, es, it, nl, pl, sv, no)
 - [x] Button-Ranking mit Scoring (exact=100, startsWith=75, contains=50)
 - [x] Accessibility-First: ARIA-Rollen, Labels und Descriptions auswerten
 - [x] Negation-Erkennung: don't/doesn't/won't verhindert Fehlklicks auf Accept-Buttons
@@ -227,11 +229,11 @@ extension/
 ### Problem
 Die aktuelle `selectorMeta.js` ist eine hartkodierte JS-Datei mit 12 Providern. Neue Provider hinzuzufügen erfordert JavaScript-Kenntnisse und das Editieren von Sourcecode. Das schreckt Contributor ab und ist fehleranfällig.
 
-### Lösung: `rules.json`
+### Lösung: `rules/rules.json`
 
 Eine zentrale JSON-Datei im Repository, die alle Banner-Regeln enthält. Contributor (auch ohne JS-Kenntnisse) können neue Provider per Pull Request hinzufügen.
 
-**Datei:** `extension/rules.json`
+**Datei:** `extension/rules/rules.json`
 
 ```json
 {
@@ -300,7 +302,7 @@ Eine zentrale JSON-Datei im Repository, die alle Banner-Regeln enthält. Contrib
 
 ### Wie es geladen wird
 
-1. `rules.json` wird als Content Script injiziert (in `manifest.json` unter `"js"` eintragen, oder via `fetch` aus dem Extension-Bundle)
+1. `rules/rules.json` wird als Content Script injiziert (in `manifest.json` unter `"js"` eintragen, oder via `fetch` aus dem Extension-Bundle)
 2. `src/rules.js` parst die JSON-Daten und stellt sie als `window.BANNER_RULES` zur Verfügung
 3. `selectors.js` und `clicker.js` nutzen `BANNER_RULES` statt der alten `BANNER_SELECTORS`/`REJECT_TEXTS`-Konstanten
 4. Die `globalKeywords` ersetzen die hartkodierten Arrays in `clicker.js`
@@ -321,7 +323,7 @@ Eine zentrale JSON-Datei im Repository, die alle Banner-Regeln enthält. Contrib
 | **Storage.local (nicht sync)** | Keine Datenübertragung an Browser-Sync-Server |
 | **Keine externen CDNs** | Alle Assets lokal gebündelt, Privacy-First |
 | **Keine Remote-Regel-Updates** | Sicherheitsrisiko, DSGVO-Problem. Regeln via Store-Update. |
-| **rules.json statt JS-Module** | Contributor-freundlich, kein JS nötig für neue Provider |
+| **rules/rules.json statt JS-Module** | Contributor-freundlich, kein JS nötig für neue Provider |
 | **MIT-Lizenz** | Maximale Freiheit für Nutzer und Beitragende |
 
 ## Datenschutz-Prinzipien

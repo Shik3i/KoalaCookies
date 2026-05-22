@@ -45,7 +45,7 @@ KoalaCookies is a Manifest V3 browser extension. It consists of a Background Ser
 
 ## Components in Detail
 
-### 1. Rule Database (`extension/rules.json`)
+### 1. Rule Database (`extension/rules/rules.json`)
 
 **Purpose:** Central, human-readable JSON file defining all known banner providers and keyword lists. Contributors can add new providers by editing this file — no JavaScript knowledge required.
 
@@ -91,7 +91,7 @@ KoalaCookies is a Manifest V3 browser extension. It consists of a Background Ser
 
 ### 2. Rules Engine (`extension/src/rulesEngine.js`)
 
-**Purpose:** Loads `rules.json` at runtime (via `fetch(chrome.runtime.getURL('rules.json'))`) and provides synchronous getters for the data. Works in both content script and service worker contexts.
+**Purpose:** Loads `rules/rules.json` at runtime (via `fetch(chrome.runtime.getURL('rules/rules.json'))`) and provides synchronous getters for the data. Works in both content script and service worker contexts.
 
 **API:**
 - `RulesEngine.ready()` — Returns a promise that resolves when rules are loaded.
@@ -109,7 +109,7 @@ On fetch failure, falls back to empty defaults (so the extension still functions
 
 **Lifecycle:**
 1. Injected at `document_idle` in all frames (`all_frames: true`, `match_about_blank: true`).
-2. `rulesEngine.js` loads `rules.json` asynchronously.
+2. `rulesEngine.js` loads `rules/rules.json` asynchronously.
 3. `selectors.js` provides `detectBanner()` (async), which scans for banners.
 4. On match: `clicker.js` finds and clicks the "Reject All" button with retry logic.
 5. Result is sent to background via `chrome.runtime.sendMessage()`.
@@ -117,7 +117,7 @@ On fetch failure, falls back to empty defaults (so the extension still functions
 
 **Detection Pipeline (`selectors.js`):**
 - **Custom Selectors:** User-captured DOM element profiles checked first.
-- **Provider Selectors:** CSS selectors from `rules.json` providers, filtered by `urlPattern`.
+- **Provider Selectors:** CSS selectors from `rules/rules.json` providers, filtered by `urlPattern`.
 - **Keyword Matching:** Fallback scanning for cookie/consent-related text in likely container elements.
 - **Shadow DOM:** Recursive TreeWalker through all shadow roots, checking provider selectors.
 

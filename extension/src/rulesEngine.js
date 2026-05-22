@@ -12,8 +12,8 @@ var RulesEngine = (function() {
   function _load() {
     try {
       var url = (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getURL)
-        ? chrome.runtime.getURL('rules.json')
-        : 'rules.json';
+        ? chrome.runtime.getURL('rules/rules.json')
+        : 'rules/rules.json';
       return fetch(url)
         .then(function(r) { return r.json(); })
         .then(function(data) {
