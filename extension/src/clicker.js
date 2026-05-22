@@ -96,7 +96,9 @@ function isAcceptButton(text, matchedText) {
     'got it', 'i agree'
   ];
 
-  if (acceptIndicators.some(indicator => text.includes(indicator) && !text.includes('do not'))) {
+  const negations = ['do not', "don't", "doesn't", "won't", 'cannot accept'];
+  const hasNegation = negations.some(n => text.includes(n));
+  if (acceptIndicators.some(indicator => text.includes(indicator) && !hasNegation)) {
     return true;
   }
 
@@ -182,7 +184,9 @@ async function clickSettingsAndRejectAll(bannerResult) {
   const allowedCategories = ['necessary', 'essential', 'functional', 'notwendig', 'essentiell', 'funktional'];
   let toggledCount = 0;
 
-  const checkboxes = document.querySelectorAll(
+  const scope = container.closest('dialog, [role="dialog"], [role="alertdialog"], .modal, .overlay, .popup, .drawer, .panel, [class*="banner" i], [class*="cookie" i], [class*="consent" i]') || document;
+
+  const checkboxes = scope.querySelectorAll(
     'input[type="checkbox"]:checked:not([disabled])'
   );
 
@@ -197,15 +201,21 @@ async function clickSettingsAndRejectAll(bannerResult) {
     }
   }
 
-  const toggles = document.querySelectorAll(
+  const toggles = scope.querySelectorAll(
     '[role="switch"][aria-checked="true"], ' +
     '[role="checkbox"][aria-checked="true"], ' +
     '.toggle.on, .toggle.checked, .switch.on, .switch.checked'
   );
 
   for (const toggle of toggles) {
-    toggle.click();
-    toggledCount++;
+    if (!isVisible(toggle)) continue;
+    const parent = toggle.closest('div, label, li, section');
+    const parentText = parent ? parent.textContent.toLowerCase() : '';
+    const isAllowed = allowedCategories.some(cat => parentText.includes(cat));
+    if (!isAllowed) {
+      toggle.click();
+      toggledCount++;
+    }
   }
 
   let saveBtn = null;

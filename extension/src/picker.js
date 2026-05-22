@@ -58,6 +58,7 @@
   }
 
   function onClick(e) {
+    if (!hovered) return;
     e.preventDefault();
     e.stopImmediatePropagation();
     var profile = getElementProfile(hovered);

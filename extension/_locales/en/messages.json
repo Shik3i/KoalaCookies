@@ -50,11 +50,11 @@
     "description": "Domain status when a banner was left visible"
   },
   "popupWhitelistRemove": {
-    "message": "Remove from",
+    "message": "Remove",
     "description": "Button text to remove domain from whitelist"
   },
   "popupWhitelistAdd": {
-    "message": "Add to",
+    "message": "Add",
     "description": "Button text to add domain to whitelist"
   },
   "popupStatusNoBanner": {
@@ -128,5 +128,93 @@
   "popupDevOpenPage": {
     "message": "Open a page to see detection info",
     "description": "Dev tab placeholder when no domain is active"
+  },
+  "popupConfirmReset": {
+    "message": "Reset all statistics? This cannot be undone.",
+    "description": "Confirmation dialog before resetting statistics"
+  },
+  "popupToastLogNoEntries": {
+    "message": "No log entries to copy",
+    "description": "Toast when there are no log entries to copy"
+  },
+  "popupToastLogCopied": {
+    "message": "Log copied to clipboard",
+    "description": "Toast when log was successfully copied"
+  },
+  "popupToastLogCopyFailed": {
+    "message": "Failed to copy: $MESSAGE$",
+    "description": "Toast when log copy failed",
+    "placeholders": {
+      "message": {
+        "content": "$1",
+        "example": "Permission denied"
+      }
+    }
+  },
+  "popupToastPickerFailed": {
+    "message": "Failed to start picker: $MESSAGE$",
+    "description": "Toast when element picker fails to start",
+    "placeholders": {
+      "message": {
+        "content": "$1",
+        "example": "Cannot access page"
+      }
+    }
+  },
+  "popupLogCopyLabel": {
+    "message": "📋 Copy as Text",
+    "description": "Button label to copy log to clipboard"
+  },
+  "popupPickerHint": {
+    "message": "Click an element on the page to capture a custom selector. Press Esc to cancel.",
+    "description": "Hint text for the element picker"
+  },
+  "popupPickerStart": {
+    "message": "🔍 Pick Element",
+    "description": "Button to start the element picker"
+  },
+  "popupSectionProviders": {
+    "message": "Known Providers",
+    "description": "Section heading for known provider list"
+  },
+  "popupSectionDebugInfo": {
+    "message": "Debug Info",
+    "description": "Section heading for debug info"
+  },
+  "popupSectionElementPicker": {
+    "message": "Element Picker",
+    "description": "Section heading for element picker"
+  },
+  "popupSectionCustomSelectors": {
+    "message": "Custom Selectors",
+    "description": "Section heading for custom selectors list"
+  },
+  "popupCustomSelectorsEmpty": {
+    "message": "No custom selectors captured yet",
+    "description": "Placeholder when no custom selectors exist"
+  },
+  "popupSelectorLoading": {
+    "message": "Loading...",
+    "description": "Loading text for provider selector list"
+  },
+  "popupSelectorEmpty": {
+    "message": "Unable to load provider list",
+    "description": "Error text when provider list fails to load"
+  },
+  "popupWhitelistSection": {
+    "message": "Whitelisted Domains",
+    "description": "Section heading for whitelist domain list"
+  },
+  "popupWhitelistEmpty": {
+    "message": "No domains whitelisted",
+    "description": "Placeholder when no domains are whitelisted"
+  },
+  "popupDevStatusOpen": {
+    "message": "Open a page to see detection info",
+    "description": "Dev tab status when no domain is active"
+  },
+  "popupDevStatusNoBanner": {
+    "message": "No banner detected on this page",
+    "description": "Dev tab status when no banner was detected"
   }
 }

@@ -77,7 +77,7 @@
         </div>
       </section>
       <section id="whitelistSection" class="whitelist-section" style="display:none;">
-        <h2>Whitelisted Domains</h2>
+        <h2 data-i18n="popupWhitelistSection">Whitelisted Domains</h2>
         <ul id="whitelistEntries" class="whitelist-entries"></ul>
       </section>
     </div>
@@ -92,7 +92,7 @@
           <span class="log-col-detail">Detail</span>
         </div>
         <div class="log-toolbar">
-          <button id="copyLogBtn" class="btn btn-small">📋 Copy as Text</button>
+          <button id="copyLogBtn" class="btn btn-small" data-i18n="popupLogCopyLabel">📋 Copy as Text</button>
         </div>
         <div id="logEntries" class="log-entries">
           <div class="log-empty">No actions yet</div>
@@ -102,7 +102,7 @@
 
     <div class="tab-content" id="tab-dev">
       <section class="dev-section">
-        <h2>Debug Info</h2>
+        <h2 data-i18n="popupSectionDebugInfo">Debug Info</h2>
         <div id="devInfo" class="dev-info">
           <div class="dev-row">
             <span class="dev-label">Status</span>
@@ -112,20 +112,20 @@
       </section>
 
       <section class="picker-section">
-        <h2>Element Picker</h2>
-        <p class="picker-hint">Click an element on the page to capture a custom selector. Press Esc to cancel.</p>
-        <button id="startPickerBtn" class="btn btn-primary">🔍 Pick Element</button>
+        <h2 data-i18n="popupSectionElementPicker">Element Picker</h2>
+        <p class="picker-hint" data-i18n="popupPickerHint">Click an element on the page to capture a custom selector. Press Esc to cancel.</p>
+        <button id="startPickerBtn" class="btn btn-primary" data-i18n="popupPickerStart">🔍 Pick Element</button>
       </section>
 
       <section class="custom-selectors-section">
-        <h2>Custom Selectors (<span id="customSelectorCount">0</span>)</h2>
+        <h2><span data-i18n="popupSectionCustomSelectors">Custom Selectors</span> (<span id="customSelectorCount">0</span>)</h2>
         <div id="customSelectorList" class="custom-selector-list">
           <div class="cs-empty">No custom selectors captured yet</div>
         </div>
       </section>
 
       <section class="selector-list-section">
-        <h2>Known Providers</h2>
+        <h2 data-i18n="popupSectionProviders">Known Providers</h2>
         <div id="selectorList" class="selector-list">
           <div class="sl-loading">Loading...</div>
         </div>

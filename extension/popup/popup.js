@@ -3,6 +3,8 @@ let currentDomain = '';
 document.addEventListener('DOMContentLoaded', () => init().catch(console.error));
 
 async function init() {
+  var i18n = chrome.i18n.getMessage;
+
   const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
   if (tabs.length > 0) {
     try {
@@ -10,9 +12,24 @@ async function init() {
       currentDomain = url.hostname;
       document.getElementById('currentDomain').textContent = currentDomain;
     } catch {
-      document.getElementById('currentDomain').textContent = chrome.i18n.getMessage('popupUnavailable');
+      document.getElementById('currentDomain').textContent = i18n('popupUnavailable');
     }
   }
+
+  var manifest = chrome.runtime.getManifest();
+  var versionEls = document.querySelectorAll('.version, .footer-github');
+  for (var i = 0; i < versionEls.length; i++) {
+    var el = versionEls[i];
+    if (el.classList.contains('version')) {
+      el.textContent = 'v' + manifest.version;
+    } else if (el.classList.contains('footer-github')) {
+      el.childNodes[el.childNodes.length - 1].textContent = ' Version ' + manifest.version;
+    }
+  }
+
+  document.querySelectorAll('.tab-btn').forEach(function (btn) {
+    btn.textContent = i18n('popupTab' + btn.dataset.tab.charAt(0).toUpperCase() + btn.dataset.tab.slice(1));
+  });
 
   await loadPopupData();
 
@@ -30,6 +47,17 @@ async function init() {
 
   await updateWhitelistButton();
   await updateDomainStatus();
+
+  translatePage();
+}
+
+function translatePage() {
+  document.querySelectorAll('[data-i18n]').forEach(function (el) {
+    el.textContent = chrome.i18n.getMessage(el.dataset.i18n);
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(function (el) {
+    el.placeholder = chrome.i18n.getMessage(el.dataset.i18nPlaceholder);
+  });
 }
 
 async function sendMessage(msg) {
@@ -128,14 +156,14 @@ async function loadDevInfo() {
   const container = document.getElementById('devInfo');
   if (!currentDomain) {
     container.innerHTML = '<div class="dev-row"><span class="dev-label">Status</span><span class="dev-value">' +
-      chrome.i18n.getMessage('popupDevOpenPage') + '</span></div>';
+      chrome.i18n.getMessage('popupDevStatusOpen') + '</span></div>';
     return;
   }
 
   const response = await sendMessage({ type: 'getDevInfo', domain: currentDomain });
   if (!response || !response.success || !response.info) {
     container.innerHTML = '<div class="dev-row"><span class="dev-label">Status</span><span class="dev-value">' +
-      chrome.i18n.getMessage('popupDevNoBanner') + '</span></div>';
+      chrome.i18n.getMessage('popupDevStatusNoBanner') + '</span></div>';
     return;
   }
 
@@ -168,7 +196,7 @@ async function loadSelectorList() {
   const container = document.getElementById('selectorList');
 
   if (!response || !response.success || !response.providers) {
-    container.innerHTML = '<div class="sl-empty">Unable to load provider list</div>';
+    container.innerHTML = '<div class="sl-empty">' + chrome.i18n.getMessage('popupSelectorEmpty') + '</div>';
     return;
   }
 
@@ -222,10 +250,11 @@ async function loadSelectorList() {
 async function copyLogToClipboard() {
   var response = await sendMessage({ type: 'getActionLog' });
   if (!response || !response.success || !response.log || !response.log.length) {
-    showToast('No log entries to copy');
+    showToast(chrome.i18n.getMessage('popupToastLogNoEntries'));
     return;
   }
 
+  var i18n = chrome.i18n.getMessage;
   var lines = response.log.map(function (entry, i) {
     var time = new Date(entry.timestamp).toLocaleString();
     return (i + 1) + '. [' + time + '] ' + entry.domain + ' \u2014 ' + entry.action + ' (' + entry.method + ') \u00BB ' + entry.detail;
@@ -235,9 +264,9 @@ async function copyLogToClipboard() {
   var text = header + lines.join('\n') + '\n';
   try {
     await navigator.clipboard.writeText(text);
-    showToast('Log copied to clipboard');
+    showToast(i18n('popupToastLogCopied'));
   } catch (e) {
-    showToast('Failed to copy: ' + e.message);
+    showToast(i18n('popupToastLogCopyFailed', [e.message]));
   }
 }
 
@@ -246,7 +275,7 @@ async function startPicker() {
   if (result && result.success) {
     window.close();
   } else {
-    showToast('Failed to start picker: ' + ((result && result.error) || 'unknown'));
+    showToast(chrome.i18n.getMessage('popupToastPickerFailed', [(result && result.error) || 'unknown']));
   }
 }
 
@@ -257,7 +286,7 @@ async function loadCustomSelectors() {
 
   var list = document.getElementById('customSelectorList');
   if (!selectors.length) {
-    list.innerHTML = '<div class="cs-empty">No custom selectors captured yet</div>';
+    list.innerHTML = '<div class="cs-empty">' + chrome.i18n.getMessage('popupCustomSelectorsEmpty') + '</div>';
     return;
   }
 
@@ -290,7 +319,7 @@ async function toggleWhitelistList() {
     var list = document.getElementById('whitelistEntries');
 
     if (!whitelist.length) {
-      list.innerHTML = '<li class="wl-empty">No domains whitelisted</li>';
+      list.innerHTML = '<li class="wl-empty">' + chrome.i18n.getMessage('popupWhitelistEmpty') + '</li>';
     } else {
       list.innerHTML = whitelist.map(function (d) {
         return '<li class="wl-entry">' +
@@ -320,7 +349,7 @@ async function onModeChange(e) {
 }
 
 async function onResetStats() {
-  if (confirm('Reset all statistics? This cannot be undone.')) {
+  if (confirm(chrome.i18n.getMessage('popupConfirmReset'))) {
     await sendMessage({ type: 'resetStats' });
     await loadStats();
     showToast(chrome.i18n.getMessage('popupToastStatsReset'));

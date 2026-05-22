@@ -50,11 +50,11 @@
     "description": "Domain-Status wenn ein Banner sichtbar gelassen wurde"
   },
   "popupWhitelistRemove": {
-    "message": "Entfernen von",
+    "message": "Entfernen",
     "description": "Button-Text zum Entfernen einer Domain von der Whitelist"
   },
   "popupWhitelistAdd": {
-    "message": "Hinzufügen zu",
+    "message": "Hinzufügen",
     "description": "Button-Text zum Hinzufügen einer Domain zur Whitelist"
   },
   "popupStatusNoBanner": {
@@ -128,5 +128,93 @@
   "popupDevOpenPage": {
     "message": "Seite öffnen um Erkennungsinfos zu sehen",
     "description": "Dev-Tab-Platzhalter wenn keine Domain aktiv ist"
+  },
+  "popupConfirmReset": {
+    "message": "Alle Statistiken zurücksetzen? Dies kann nicht rückgängig gemacht werden.",
+    "description": "Bestätigungsdialog vor dem Zurücksetzen der Statistiken"
+  },
+  "popupToastLogNoEntries": {
+    "message": "Keine Log-Einträge zum Kopieren",
+    "description": "Toast wenn keine Log-Einträge zum Kopieren vorhanden sind"
+  },
+  "popupToastLogCopied": {
+    "message": "Log in Zwischenablage kopiert",
+    "description": "Toast wenn Log erfolgreich kopiert wurde"
+  },
+  "popupToastLogCopyFailed": {
+    "message": "Kopieren fehlgeschlagen: $MESSAGE$",
+    "description": "Toast wenn Log-Kopie fehlgeschlagen ist",
+    "placeholders": {
+      "message": {
+        "content": "$1",
+        "example": "Berechtigung verweigert"
+      }
+    }
+  },
+  "popupToastPickerFailed": {
+    "message": "Picker konnte nicht gestartet werden: $MESSAGE$",
+    "description": "Toast wenn Element-Picker nicht startet",
+    "placeholders": {
+      "message": {
+        "content": "$1",
+        "example": "Seite nicht zugänglich"
+      }
+    }
+  },
+  "popupLogCopyLabel": {
+    "message": "📋 Als Text kopieren",
+    "description": "Button-Label zum Kopieren des Logs"
+  },
+  "popupPickerHint": {
+    "message": "Klicke ein Element auf der Seite um einen Custom-Selector zu erfassen. Esc zum Abbrechen.",
+    "description": "Hinweistext für den Element-Picker"
+  },
+  "popupPickerStart": {
+    "message": "🔍 Element wählen",
+    "description": "Button um den Element-Picker zu starten"
+  },
+  "popupSectionProviders": {
+    "message": "Bekannte Anbieter",
+    "description": "Abschnittsüberschrift für Anbieterliste"
+  },
+  "popupSectionDebugInfo": {
+    "message": "Debug-Info",
+    "description": "Abschnittsüberschrift für Debug-Informationen"
+  },
+  "popupSectionElementPicker": {
+    "message": "Element-Picker",
+    "description": "Abschnittsüberschrift für Element-Picker"
+  },
+  "popupSectionCustomSelectors": {
+    "message": "Custom-Selectoren",
+    "description": "Abschnittsüberschrift für Custom-Selectoren"
+  },
+  "popupCustomSelectorsEmpty": {
+    "message": "Noch keine Custom-Selectoren erfasst",
+    "description": "Platzhalter wenn keine Custom-Selectoren existieren"
+  },
+  "popupSelectorLoading": {
+    "message": "Lade...",
+    "description": "Ladetext für Anbieter-Selector-Liste"
+  },
+  "popupSelectorEmpty": {
+    "message": "Anbieterliste konnte nicht geladen werden",
+    "description": "Fehlertext wenn Anbieterliste nicht geladen werden kann"
+  },
+  "popupWhitelistSection": {
+    "message": "Whitelist-Domains",
+    "description": "Abschnittsüberschrift für Whitelist-Domain-Liste"
+  },
+  "popupWhitelistEmpty": {
+    "message": "Keine Domains in der Whitelist",
+    "description": "Platzhalter wenn keine Domains in der Whitelist sind"
+  },
+  "popupDevStatusOpen": {
+    "message": "Seite öffnen um Erkennungsinfos zu sehen",
+    "description": "Dev-Tab-Status wenn keine Domain aktiv ist"
+  },
+  "popupDevStatusNoBanner": {
+    "message": "Kein Banner auf dieser Seite erkannt",
+    "description": "Dev-Tab-Status wenn kein Banner erkannt wurde"
   }
 }

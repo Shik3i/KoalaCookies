@@ -97,7 +97,7 @@ const Service = {
     return await Storage.getBannerInfo(domain);
   },
 
-  async getSelectorList() {
+  getSelectorList() {
     return Object.entries(BANNER_SELECTORS).map(([key, sel]) => ({
       id: key,
       name: BANNER_META[key] ? BANNER_META[key].name : key,
@@ -312,6 +312,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 function extractLogInfo(detail, action) {
   if (typeof detail === 'object' && detail !== null && detail.method) {
+    if (detail.toggled !== undefined) {
+      return { method: detail.method, detail: 'Toggled ' + detail.toggled + ' categories' };
+    }
     return { method: detail.method, detail: detail.text || '-' };
   }
   if (action === 'hidden') {

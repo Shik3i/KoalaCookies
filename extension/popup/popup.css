@@ -365,15 +365,6 @@ body {
   padding: 4px 6px;
 }
 
-.btn-warning {
-  border-color: var(--color-warning);
-  color: var(--color-warning);
-}
-
-.btn-warning:hover {
-  background: rgba(245, 124, 0, 0.1);
-}
-
 .log-section {
   font-family: var(--font-mono);
   font-size: 11px;
@@ -392,12 +383,6 @@ body {
 .log-header-row .log-col-domain,
 .log-header-row .log-col-detail {
   color: var(--color-text-secondary);
-}
-
-.log-toolbar {
-  display: flex;
-  justify-content: flex-end;
-  padding: 4px 6px;
 }
 
 .log-entries {
