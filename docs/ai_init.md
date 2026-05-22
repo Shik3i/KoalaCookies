@@ -51,8 +51,10 @@ extension/
 │   ├── background.js      # Service Worker
 │   ├── content.js         # Content Script (Orchestration)
 │   ├── storage.js         # Storage-Abstraktion + Statistiken
-│   ├── selectors.js       # Banner-Erkennung + Selektordatenbank
-│   └── clicker.js         # Button-Findung + Klicklogik
+│   ├── selectorMeta.js    # Selektordatenbank + Anbieter-Metadaten
+│   ├── selectors.js       # Banner-Erkennung (Custom + Built-in + Keywords + Shadow DOM)
+│   ├── clicker.js         # Button-Findung + Klicklogik
+│   └── picker.js          # Element-Picker (Hover-Highlighter + DOM-Erfassung)
 ├── popup/
 │   ├── popup.html         # Popup-UI
 │   ├── popup.js           # Popup-Logik
@@ -79,7 +81,8 @@ extension/
 
 ### Berechtigungen (minimales Prinzip)
 - `<all_urls>` oder `activeTab` + Host-Permissions für DOM-Zugriff
-- `storage` für Statistiken und Einstellungen
+- `storage` für Statistiken, Einstellungen und Custom-Selectoren
+- `scripting` für Element-Picker (Injektion von `picker.js`)
 - Keine `cookies`, `webRequest` oder andere invasive Permission
 
 ## Roadmap
@@ -105,12 +108,43 @@ extension/
 - [x] Dark Mode
 
 ### v1.0.0 - Release
-- [ ] Vollständige Testabdeckung
+- [x] Vollständige Testabdeckung (manuell, siehe Audit)
 - [x] Performance-Optimierung (MutationObserver statt Polling)
 - [ ] Store-Listing vorbereiten (Firefox Add-ons + Chrome Web Store)
 - [x] Firefox + Chrome ZIP-Builds via CI/CD
 - [x] Action-Log (letzte 10 Aktionen im Popup)
 - [x] Dev-Tab (technische Debug-Infos zur aktuellen Seite)
+
+### v1.0.1 - Erweiterte Dev-Tools & Custom-Selectoren
+- [x] Provider-Selector-Liste im Dev-Tab (scrollbar, kollabierbar, 12 Anbieter mit Metadaten)
+- [x] Copy Action Log als formatierter Plaintext
+- [x] Element-Picker (Hover-Highlighter + DOM-Element-Erfassung per Klick)
+- [x] Custom-Selector-Speicherung in `chrome.storage.local`
+- [x] Custom-Selectoren in der Detection-Pipeline (werden vor Built-in-Providern geprüft)
+- [x] Whitelist-Management-UI (Double-Click öffnet Domain-Liste mit Remove)
+
+### v1.0.2 - Audit-Bugfixes (Teil 1)
+- [x] selector-list async/sync mismatch (Dev-Tab broken)
+- [x] Whitelist-Button i18n Text-Duplizierung ("Remove from to Whitelist")
+- [x] clickSettingsAndRejectAll auf Banner-Container scopen (nicht globales document)
+- [x] isAcceptButton: Kontraktionen wie don't/doesn't/won't erkennen
+- [x] extractLogInfo: toggled-Count im Log-Detail anzeigen
+- [x] i18n für alle hartcodierten Strings (14 neue Keys, en+de)
+- [x] Picker-Crash bei Keyboard-Navigation (null hovered)
+- [x] Tab-Labels (Stats, Log, Dev) per i18n
+- [x] Version aus chrome.runtime.getManifest() lesen (__VERSION__ Fallback für Dev)
+- [x] Doppelte CSS-Blöcke entfernt
+- [x] color-scheme: light dark in global.css
+
+### v1.0.3 - Audit-Bugfixes (Teil 2)
+- [x] Stats-Race-Condition mit Promise-Lock serialisiert
+- [x] SPA-Navigation: MutationObserver + popstate erkennen URL-Änderungen
+- [x] getCustomSelectors nutzt Storage-Abstraktion (konsistent)
+- [x] MutationObserver Fallback bei document.body === null
+- [x] module.exports Dead-Code aus allen Source-Files entfernt
+- [x] Firefox Extension ID konfigurierbar via FIREFOX_EXTENSION_ID env var
+- [x] startPicker prüft auf restricted schemes (chrome://, edge://, etc.)
+- [x] Unsicheres button:last-child aus hideBanner-Selector entfernt
 
 ## Technische Entscheidungen
 

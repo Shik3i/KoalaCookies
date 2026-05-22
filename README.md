@@ -35,11 +35,13 @@
 | 🚫 **Automatic Rejection** | Detects banners and clicks "Reject All" / "Decline" / "Nur notwendige" in one go |
 | 🔍 **Smart Detection** | Recognizes 12+ providers (OneTrust, Cookiebot, Usercentrics, Quantcast, etc.) with keyword fallback and Shadow DOM support |
 | 🛡️ **Two Modes** | **Gentle** — leaves banner visible if no reject button found; **Aggressive** — hides the banner entirely |
+| 🎯 **Element Picker** | Hover-highlight DOM elements and capture them as custom selectors for banner detection |
+| 🧩 **Custom Selectors** | User-captured selectors take priority in the detection pipeline before built-in providers |
 | 📊 **Statistics** | Tracks detected, rejected, skipped, and hidden banners per domain and globally |
-| 📝 **Action Log** | Last 10 actions with timestamp, domain, method, and button text |
-| 🐞 **Dev Tools** | Technical debug info per page (provider, detection method, container element) |
+| 📝 **Action Log** | Last 10 actions with timestamp, domain, method, and button text — copyable as formatted text |
+| 🐞 **Dev Tools** | Per-page debug info + scrollable list of all 12 known providers with their CSS selectors |
 | 🌙 **Dark Mode** | Respects your system preference automatically |
-| 🌍 **i18n** | English and German translations |
+| 🌍 **i18n** | English and German translations for full UI including Dev tab |
 | 🔒 **Privacy-First** | 100% local — no external connections, no tracking, no analytics |
 | 📦 **Zero Dependencies** | Pure vanilla JavaScript, no npm packages, no CDNs, no frameworks |
 
@@ -122,21 +124,23 @@ KoalaCookies/
 │   ├── ai_init.md         # Implementation plan & vision
 │   ├── architecture.md    # Technical architecture
 │   └── privacy.md         # Privacy policy
-├── extension/             # Extension source code
-│   ├── manifest.json      # Extension manifest (MV3)
-│   ├── src/               # JavaScript modules
-│   │   ├── background.js  # Service worker (message router, stats)
-│   │   ├── content.js     # Content script (DOM scan, click orchestration)
-│   │   ├── storage.js     # chrome.storage.local abstraction
-│   │   ├── selectors.js   # Banner detection (selectors, keywords, Shadow DOM)
-│   │   └── clicker.js     # Button finding + click strategies
-│   ├── popup/             # Popup UI (Stats, Log, Dev tabs)
-│   │   ├── popup.html
-│   │   ├── popup.js
-│   │   └── popup.css
-│   ├── styles/            # Global CSS variables + dark mode
-│   ├── _locales/          # Translations (en, de)
-│   └── icons/             # Extension icons
+│ ├── extension/             # Extension source code
+│ │   ├── manifest.json      # Extension manifest (MV3)
+│ │   ├── src/               # JavaScript modules
+│ │   │   ├── background.js  # Service worker (message router, stats, picker injection)
+│ │   │   ├── content.js     # Content script (DOM scan, click orchestration, SPA support)
+│ │   │   ├── storage.js     # chrome.storage.local abstraction + stats lock
+│ │   │   ├── selectorMeta.js# Shared selector database + provider metadata
+│ │   │   ├── selectors.js   # Banner detection (selectors, keywords, Shadow DOM, custom selectors)
+│ │   │   ├── clicker.js     # Button finding + click strategies (scoped queries, contractions)
+│ │   │   └── picker.js      # Element picker (hover highlighter + DOM element capture)
+│ │   ├── popup/             # Popup UI (Stats, Log, Dev tabs)
+│ │   │   ├── popup.html
+│ │   │   ├── popup.js
+│ │   │   └── popup.css
+│ │   ├── styles/            # Global CSS variables + dark mode
+│ │   ├── _locales/          # Translations (en, de)
+│ │   └── icons/             # Extension icons
 ├── scripts/               # Build & utility scripts
 │   ├── build.sh           # Build Firefox + Chrome ZIPs
 │   ├── generate-icons.sh  # Generate icons via Python
@@ -156,8 +160,8 @@ bash scripts/build.sh
 ```
 
 The build script:
-1. Reads the version from `extension/manifest.json`
-2. Creates a Firefox-compatible ZIP with `browser_specific_settings.gecko`
+1. Reads the version from `extension/manifest.json` (or `$1` argument)
+2. Creates a Firefox-compatible ZIP with `browser_specific_settings.gecko` (configurable via `$FIREFOX_EXTENSION_ID`)
 3. Creates a Chrome-compatible ZIP (strips Firefox-specific keys)
 4. Injects the version number into `popup.html`
 
@@ -198,4 +202,4 @@ See [docs/ai_init.md](docs/ai_init.md) for the full implementation roadmap and c
 
 MIT License — see [LICENSE](LICENSE) for details.
 
-Copyright (c) 2025 KoalaCookies Contributors
+Copyright (c) 2026 KoalaCookies Contributors

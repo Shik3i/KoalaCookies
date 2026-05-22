@@ -13,9 +13,10 @@ Die Extension speichert ausschließlich folgende Daten **lokal im Browser** via 
 | Datenkategorie | Beschreibung | Zweck |
 |---|---|---|
 | **Statistiken** | Anzahl erkannter/abgelehnter/übersprungener Cookie-Banner, aufgeschlüsselt nach Domain | Anzeige im Popup für den Nutzer |
-| **Action-Log** | Letzte 10 Aktionen (Zeitstempel, Domain, Aktion, Methode, Button-Text) | Nachvollziehbarkeit im Popup |
+| **Action-Log** | Letzte 10 Aktionen (Zeitstempel, Domain, Aktion, Methode, Detail inkl. Toggle-Count) | Nachvollziehbarkeit im Popup |
 | **Dev-Info** | Technische Details zur letzten Banner-Erkennung pro Domain | Debugging im Popup |
 | **Einstellungen** | Gewählter Modus (sanft/aggressiv), Domain-Whitelist | Konfiguration des Verhaltens |
+| **Custom-Selectoren** | Vom Nutzer per Element-Picker erfasste DOM-Element-Profile | Priorisierte Banner-Erkennung |
 
 ### Was wird NICHT gespeichert oder übermittelt?
 
@@ -42,8 +43,10 @@ Die Extension fordert folgende Berechtigungen an:
 
 | Berechtigung | Begründung |
 |---|---|
-| `storage` | Zum lokalen Speichern von Statistiken und Einstellungen |
-| `activeTab` / `<all_urls>` | Zugriff auf Webseiten-DOM zur Erkennung und Interaktion mit Cookie-Bannern |
+| `storage` | Zum lokalen Speichern von Statistiken, Einstellungen und Custom-Selectoren |
+| `activeTab` | Zugriff auf das aktive Tab für die Erkennung von Cookie-Bannern |
+| `scripting` | Injektion des Element-Pickers (`picker.js`) per `chrome.scripting.executeScript` |
+| `<all_urls>` | Dom-Zugriff auf alle Webseiten zur Erkennung und Interaktion mit Cookie-Bannern |
 
 ## Dritt-Anbieter / Externe Ressourcen
 
