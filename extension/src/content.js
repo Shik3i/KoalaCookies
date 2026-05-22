@@ -86,6 +86,53 @@ async function processPage() {
     detectionMethod: bannerResult.method,
     containerInfo: getContainerInfo(bannerResult.container)
   }).catch(() => {});
+
+  showPageIndicator(result);
+}
+
+var INDICATOR_COLORS = {
+  rejected: '#2e7d32',
+  hidden: '#1565c0',
+  skipped: '#f57c00'
+};
+
+var INDICATOR_LABELS = {
+  rejected: '✓',
+  hidden: '✕',
+  skipped: '!'
+};
+
+function showPageIndicator(result) {
+  try {
+    if (window.self !== window.top) return;
+
+    var oldIndicator = document.getElementById('__koala_indicator');
+    if (oldIndicator) oldIndicator.remove();
+
+    var color = INDICATOR_COLORS[result.action] || '#9e9e9e';
+    var label = INDICATOR_LABELS[result.action] || '';
+
+    var el = document.createElement('div');
+    el.id = '__koala_indicator';
+    el.style.cssText = [
+      'position:fixed;bottom:16px;right:16px;z-index:2147483646',
+      'width:28px;height:28px;border-radius:50%',
+      'background:' + color + ';color:#fff',
+      'display:flex;align-items:center;justify-content:center',
+      'font-size:14px;font-weight:bold;font-family:sans-serif',
+      'opacity:0;transition:opacity 0.3s ease',
+      'pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,0.2)'
+    ].join(';');
+    el.textContent = label;
+
+    document.body.appendChild(el);
+    requestAnimationFrame(function() { el.style.opacity = '0.9'; });
+
+    setTimeout(function() {
+      el.style.opacity = '0';
+      setTimeout(function() { if (el.parentNode) el.remove(); }, 300);
+    }, 3000);
+  } catch (e) {}
 }
 
 function getContainerInfo(container) {
