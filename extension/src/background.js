@@ -1,4 +1,8 @@
-importScripts('storage.js');
+try {
+  importScripts('storage.js');
+} catch (e) {
+  console.error('KoalaCookies: Failed to load storage module', e);
+}
 
 const Service = {
   async getStatsForPopup() {

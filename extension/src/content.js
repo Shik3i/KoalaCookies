@@ -10,6 +10,7 @@ function isValidPage() {
 async function processPage() {
   if (processed) return;
   if (!isValidPage()) return;
+  processed = true;
 
   const settings = await Storage.getSettings();
   const whitelist = settings.whitelist || [];
@@ -17,21 +18,20 @@ async function processPage() {
   const domain = window.location.hostname;
 
   if (whitelist.includes(domain)) {
-    processed = true;
     return;
   }
 
   const bannerResult = detectBanner();
 
   if (!bannerResult) {
+    processed = false;
     return;
   }
 
   if (!bannerResult.container || !isVisible(bannerResult.container)) {
+    processed = false;
     return;
   }
-
-  processed = true;
   await Storage.updateStats(domain, { detected: true });
 
   let result;
@@ -68,10 +68,13 @@ function setupObserver() {
   }
 
   bannerObserver = new MutationObserver(() => {
-    if (processed) return;
+    if (processed) {
+      bannerObserver.disconnect();
+      return;
+    }
     if (debounceTimer) clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
-      processPage();
+      processPage().catch(console.error);
     }, 500);
   });
 

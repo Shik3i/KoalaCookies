@@ -1,13 +1,17 @@
 let currentDomain = '';
 
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', () => init().catch(console.error));
 
 async function init() {
   const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
   if (tabs.length > 0) {
-    const url = new URL(tabs[0].url);
-    currentDomain = url.hostname;
-    document.getElementById('currentDomain').textContent = currentDomain;
+    try {
+      const url = new URL(tabs[0].url);
+      currentDomain = url.hostname;
+      document.getElementById('currentDomain').textContent = currentDomain;
+    } catch {
+      document.getElementById('currentDomain').textContent = 'Unavailable';
+    }
   }
 
   await loadStats();
