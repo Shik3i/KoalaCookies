@@ -15,6 +15,7 @@ var bannerObserver = null;
 var processed = false;
 var debounceTimer = null;
 var lastUrl = location.href;
+var lastProcessTime = 0;
 
 function isValidPage() {
   const protocol = window.location.protocol;
@@ -24,6 +25,11 @@ function isValidPage() {
 async function processPage() {
   if (processed) return;
   if (!isValidPage()) return;
+
+  var now = Date.now();
+  if (now - lastProcessTime < 2000) return;
+  lastProcessTime = now;
+
   processed = true;
 
   const settings = await Storage.getSettings();
