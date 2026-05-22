@@ -97,7 +97,7 @@ const Storage = {
     stats.byDomain = byDomain;
 
     await this.set('stats', stats);
-    });
+    }).catch(console.error);
     return this._lock;
   }
 };

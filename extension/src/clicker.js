@@ -221,7 +221,8 @@ async function clickSettingsAndRejectAll(bannerResult) {
   let saveBtn = null;
 
   if (bannerResult.selectors && bannerResult.selectors.saveSettings) {
-    saveBtn = document.querySelector(bannerResult.selectors.saveSettings);
+    const root = container.getRootNode ? container.getRootNode() : document;
+    saveBtn = root.querySelector(bannerResult.selectors.saveSettings);
   }
 
   if (!saveBtn || !isVisible(saveBtn)) {

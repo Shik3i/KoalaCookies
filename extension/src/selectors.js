@@ -103,7 +103,7 @@ async function detectBannerViaCustomSelectors() {
 
     let selector = p.tagName;
     if (p.id) {
-      selector += '#' + p.id;
+      selector += '#' + CSS.escape(p.id);
     } else if (p.className) {
       const firstClass = p.className.split(' ')[0];
       if (firstClass && firstClass.length > 1) selector += '.' + CSS.escape(firstClass);
