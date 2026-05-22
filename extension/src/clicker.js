@@ -60,7 +60,7 @@ function findButtonByText(container, texts) {
   const lowerTexts = texts.map(t => t.toLowerCase());
 
   let bestCandidate = null;
-  let bestScore = -1;
+  let bestScore = 0;
 
   for (const el of candidates) {
     if (!isVisible(el)) continue;
@@ -184,7 +184,7 @@ async function clickSettingsAndRejectAll(bannerResult) {
   const allowedCategories = ['necessary', 'essential', 'functional', 'notwendig', 'essentiell', 'funktional'];
   let toggledCount = 0;
 
-  const scope = container.closest('dialog, [role="dialog"], [role="alertdialog"], .modal, .overlay, .popup, .drawer, .panel, [class*="banner" i], [class*="cookie" i], [class*="consent" i]') || document;
+  const scope = container.closest('dialog, [role="dialog"], [role="alertdialog"], .modal, .overlay, .popup, .drawer, .panel, [class*="banner" i], [class*="cookie" i], [class*="consent" i]') || container;
 
   const checkboxes = scope.querySelectorAll(
     'input[type="checkbox"]:checked:not([disabled])'
