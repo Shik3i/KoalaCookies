@@ -1,8 +1,20 @@
+function _urlMatches(provider) {
+  if (!provider.urlPattern || !provider.urlPattern.length) return true;
+  var hostname = window.location.hostname;
+  for (var i = 0; i < provider.urlPattern.length; i++) {
+    try {
+      if (new RegExp(provider.urlPattern[i]).test(hostname)) return true;
+    } catch (e) { continue; }
+  }
+  return false;
+}
+
 function detectBannerViaSelectors() {
   var providers = RulesEngine.getProviders();
   for (var i = 0; i < providers.length; i++) {
     var provider = providers[i];
     if (!provider.selectors || !provider.selectors.container) continue;
+    if (!_urlMatches(provider)) continue;
     var container = document.querySelector(provider.selectors.container);
     if (container && isVisible(container, false)) {
       return { provider: provider.id, container: container, selectors: provider.selectors };
@@ -164,6 +176,7 @@ async function detectBanner() {
     for (var p = 0; p < providers.length; p++) {
       var provider = providers[p];
       if (!provider.selectors || !provider.selectors.container) continue;
+      if (!_urlMatches(provider)) continue;
       try {
         var shadowContainer = shadowRoot.querySelector(provider.selectors.container);
         if (shadowContainer && isVisible(shadowContainer)) {
