@@ -129,17 +129,11 @@ const Service = {
     }
   },
 
-  async saveCustomSelector(profile) {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    let domain = 'unknown';
-    try {
-      domain = new URL(tab.url).hostname;
-    } catch {}
-
+  async saveCustomSelector(profile, domain) {
     const customSelectors = (await chrome.storage.local.get('customSelectors')).customSelectors || [];
     customSelectors.push({
       profile,
-      domain,
+      domain: domain || 'unknown',
       addedAt: new Date().toISOString()
     });
     await chrome.storage.local.set({ customSelectors });
@@ -278,7 +272,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 
   if (message.type === 'pickerElementCaptured') {
-    Service.saveCustomSelector(message.profile).then(() => {
+    let domain = 'unknown';
+    try {
+      domain = new URL(sender.tab.url).hostname;
+    } catch {}
+    Service.saveCustomSelector(message.profile, domain).then(() => {
       return Service.getCustomSelectors();
     }).then(selectors => {
       sendResponse({ success: true, selectors });

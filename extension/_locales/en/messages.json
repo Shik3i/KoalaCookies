@@ -50,11 +50,11 @@
     "description": "Domain status when a banner was left visible"
   },
   "popupWhitelistRemove": {
-    "message": "Remove",
+    "message": "Remove from Whitelist",
     "description": "Button text to remove domain from whitelist"
   },
   "popupWhitelistAdd": {
-    "message": "Add",
+    "message": "Add to Whitelist",
     "description": "Button text to add domain to whitelist"
   },
   "popupStatusNoBanner": {
