@@ -13,6 +13,7 @@ const DEFAULTS = {
 };
 
 const Storage = {
+  _lock: Promise.resolve(),
   async get(key) {
     try {
       const result = await chrome.storage.local.get(key);
@@ -67,6 +68,7 @@ const Storage = {
   },
 
   async updateStats(domain, update) {
+    this._lock = this._lock.then(async () => {
     const stats = await this.getStats();
     const byDomain = stats.byDomain || {};
 
@@ -95,9 +97,7 @@ const Storage = {
     stats.byDomain = byDomain;
 
     await this.set('stats', stats);
+    });
+    return this._lock;
   }
 };
-
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = Storage;
-}

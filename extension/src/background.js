@@ -115,6 +115,10 @@ const Service = {
   async startPicker() {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (!tab || !tab.id) throw new Error('No active tab');
+    const url = tab.url || '';
+    if (/^(chrome|edge|about|chrome-extension|moz-extension):/.test(url)) {
+      throw new Error('Element picker cannot run on this page type');
+    }
     try {
       await chrome.scripting.executeScript({
         target: { tabId: tab.id },

@@ -250,7 +250,6 @@ function hideBanner(bannerResult) {
     '.dismiss',
     '[class*="close" i]',
     '[class*="dismiss" i]',
-    'button:last-child',
     '.banner-close'
   ];
 
@@ -268,8 +267,4 @@ function hideBanner(bannerResult) {
 
   container.remove();
   return true;
-}
-
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { clickRejectAll, clickSettingsAndRejectAll, hideBanner, findButtonByText, REJECT_TEXTS };
 }

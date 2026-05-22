@@ -1,6 +1,7 @@
 let bannerObserver = null;
 let processed = false;
 let debounceTimer = null;
+let lastUrl = location.href;
 
 function isValidPage() {
   const protocol = window.location.protocol;
@@ -77,25 +78,37 @@ function setupObserver() {
   }
 
   bannerObserver = new MutationObserver(() => {
-    if (processed) {
-      bannerObserver.disconnect();
-      return;
+    if (location.href !== lastUrl) {
+      processed = false;
+      lastUrl = location.href;
     }
+    if (processed) return;
     if (debounceTimer) clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
       processPage().catch(console.error);
     }, 500);
   });
 
-  if (document.body) {
-    bannerObserver.observe(document.body, {
-      childList: true,
-      subtree: true
-    });
+  function doObserve() {
+    if (document.body) {
+      bannerObserver.observe(document.body, {
+        childList: true,
+        subtree: true
+      });
+    } else {
+      requestAnimationFrame(doObserve);
+    }
   }
+  doObserve();
 }
 
 function start() {
+  window.addEventListener('popstate', () => {
+    processed = false;
+    lastUrl = location.href;
+    setTimeout(processPage, 300);
+  });
+
   // document_idle guarantees readyState is complete, kept as safety fallback
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {

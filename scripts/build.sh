@@ -22,16 +22,17 @@ rm -rf "$FIREFOX_BUILD_DIR"
 cp -r "$EXTENSION_DIR" "$FIREFOX_BUILD_DIR"
 
 # Add browser_specific_settings for Firefox
+FIREFOX_ID="${FIREFOX_EXTENSION_ID:-koalacookies@github.com}"
 node -e "
 const manifest = require(process.argv[1]);
 manifest.browser_specific_settings = {
   gecko: {
-    id: 'koalacookies@github.com',
+    id: process.argv[2],
     strict_min_version: '109.0'
   }
 };
 require('fs').writeFileSync(process.argv[1], JSON.stringify(manifest, null, 2));
-" "$FIREFOX_BUILD_DIR/manifest.json"
+" "$FIREFOX_BUILD_DIR/manifest.json" "$FIREFOX_ID"
 
 # Inject version into popup.html
 node -e "

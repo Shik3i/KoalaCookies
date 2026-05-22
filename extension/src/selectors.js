@@ -90,10 +90,8 @@ function findShadowRoots(root) {
 }
 
 async function getCustomSelectors() {
-  try {
-    const data = await chrome.storage.local.get('customSelectors');
-    return data.customSelectors || [];
-  } catch { return []; }
+  const data = await Storage.get('customSelectors');
+  return data || [];
 }
 
 async function detectBannerViaCustomSelectors() {
@@ -166,8 +164,4 @@ async function detectBanner() {
   }
 
   return null;
-}
-
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { detectBanner, detectBannerViaSelectors, detectBannerByKeywords, findShadowRoots, isVisible };
 }
