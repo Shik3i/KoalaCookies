@@ -1,14 +1,15 @@
 {
   "manifest_version": 3,
   "name": "KoalaCookies",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "__MSG_extensionDescription__",
   "default_locale": "en",
   "author": "KoalaCookies Contributors",
   "homepage_url": "https://github.com/Shik3i/KoalaCookies",
   "permissions": [
     "storage",
-    "activeTab"
+    "activeTab",
+    "scripting"
   ],
   "host_permissions": [
     "<all_urls>"
@@ -36,6 +37,7 @@
       "matches": ["*://*/*"],
       "js": [
         "src/storage.js",
+        "src/selectorMeta.js",
         "src/selectors.js",
         "src/clicker.js",
         "src/content.js"

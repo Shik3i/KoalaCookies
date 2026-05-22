@@ -19,10 +19,14 @@ async function init() {
   document.getElementById('modeSelect').addEventListener('change', onModeChange);
   document.getElementById('resetStatsBtn').addEventListener('click', onResetStats);
   document.getElementById('whitelistBtn').addEventListener('click', onToggleWhitelist);
+  document.getElementById('copyLogBtn').addEventListener('click', copyLogToClipboard);
+  document.getElementById('startPickerBtn').addEventListener('click', startPicker);
 
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => switchTab(btn.dataset.tab));
   });
+
+  document.getElementById('whitelistBtn').addEventListener('dblclick', toggleWhitelistList);
 
   await updateWhitelistButton();
   await updateDomainStatus();
@@ -45,7 +49,11 @@ function switchTab(tabName) {
   document.getElementById('tab-' + tabName).classList.add('active');
 
   if (tabName === 'log') loadActionLog();
-  if (tabName === 'dev') loadDevInfo();
+  if (tabName === 'dev') {
+    loadDevInfo();
+    loadSelectorList();
+    loadCustomSelectors();
+  }
 }
 
 async function loadPopupData() {
@@ -155,6 +163,156 @@ async function loadDevInfo() {
   }).join('');
 }
 
+async function loadSelectorList() {
+  const response = await sendMessage({ type: 'getSelectorList' });
+  const container = document.getElementById('selectorList');
+
+  if (!response || !response.success || !response.providers) {
+    container.innerHTML = '<div class="sl-empty">Unable to load provider list</div>';
+    return;
+  }
+
+  container.innerHTML = response.providers.map((p, i) => {
+    const sel = p.selectors;
+    const fields = [
+      ['container', sel.container],
+      ['rejectAll', sel.rejectAll],
+      ['settings', sel.settings],
+      ['saveSettings', sel.saveSettings],
+      ['acceptAll', sel.acceptAll]
+    ].filter(function (f) { return f[1]; });
+
+    var fieldHtml = fields.map(function (f) {
+      return '<div class="selector-field">' +
+        '<span class="selector-field-label">' + escapeHtml(f[0]) + '</span>' +
+        '<code class="selector-field-value">' + escapeHtml(f[1]) + '</code>' +
+        '</div>';
+    }).join('');
+
+    var headerRight = '';
+    if (p.url) {
+      headerRight = '<a href="' + escapeHtml(p.url) + '" target="_blank" rel="noopener noreferrer" class="prov-link" title="' + escapeHtml(p.name) + ' website">&#8599;</a>';
+    }
+
+    return '<div class="selector-provider">' +
+      '<div class="selector-provider-header" data-index="' + i + '" title="Click to expand">' +
+        '<span class="prov-name">' + escapeHtml(p.name) + '</span>' +
+        '<span class="prov-actions">' +
+          '<span class="prov-chevron">&#9654;</span>' +
+          headerRight +
+        '</span>' +
+      '</div>' +
+      '<div class="selector-provider-body">' + fieldHtml + '</div>' +
+      '</div>';
+  }).join('');
+
+  container.querySelectorAll('.selector-provider-header').forEach(function (header) {
+    header.addEventListener('click', function () {
+      var provider = header.parentElement;
+      var wasOpen = provider.classList.contains('open');
+      provider.classList.toggle('open');
+      var chevron = header.querySelector('.prov-chevron');
+      if (chevron) {
+        chevron.innerHTML = wasOpen ? '&#9654;' : '&#9660;';
+      }
+    });
+  });
+}
+
+async function copyLogToClipboard() {
+  var response = await sendMessage({ type: 'getActionLog' });
+  if (!response || !response.success || !response.log || !response.log.length) {
+    showToast('No log entries to copy');
+    return;
+  }
+
+  var lines = response.log.map(function (entry, i) {
+    var time = new Date(entry.timestamp).toLocaleString();
+    return (i + 1) + '. [' + time + '] ' + entry.domain + ' \u2014 ' + entry.action + ' (' + entry.method + ') \u00BB ' + entry.detail;
+  });
+
+  var header = 'KoalaCookies Action Log \u2014 ' + new Date().toLocaleDateString() + '\n' + '\u2500'.repeat(50) + '\n';
+  var text = header + lines.join('\n') + '\n';
+  try {
+    await navigator.clipboard.writeText(text);
+    showToast('Log copied to clipboard');
+  } catch (e) {
+    showToast('Failed to copy: ' + e.message);
+  }
+}
+
+async function startPicker() {
+  var result = await sendMessage({ type: 'startPicker' });
+  if (result && result.success) {
+    window.close();
+  } else {
+    showToast('Failed to start picker: ' + ((result && result.error) || 'unknown'));
+  }
+}
+
+async function loadCustomSelectors() {
+  var resp = await sendMessage({ type: 'getCustomSelectors' });
+  var selectors = (resp && resp.selectors) || [];
+  document.getElementById('customSelectorCount').textContent = selectors.length;
+
+  var list = document.getElementById('customSelectorList');
+  if (!selectors.length) {
+    list.innerHTML = '<div class="cs-empty">No custom selectors captured yet</div>';
+    return;
+  }
+
+  list.innerHTML = selectors.map(function (s, i) {
+    var label = s.profile.tagName;
+    if (s.profile.id) label += '#' + s.profile.id;
+    else if (s.profile.className) label += '.' + s.profile.className.split(' ')[0];
+
+    return '<div class="custom-selector-entry">' +
+      '<div class="cs-domain">' + escapeHtml(s.domain) + '</div>' +
+      '<code class="cs-selector">' + escapeHtml(label) + '</code>' +
+      '<button class="cs-remove" data-index="' + i + '" title="Remove">\u00D7</button>' +
+      '</div>';
+  }).join('');
+
+  list.querySelectorAll('.cs-remove').forEach(function (btn) {
+    btn.addEventListener('click', async function () {
+      var idx = parseInt(btn.dataset.index, 10);
+      await sendMessage({ type: 'removeCustomSelector', index: idx });
+      loadCustomSelectors();
+    });
+  });
+}
+
+async function toggleWhitelistList() {
+  var section = document.getElementById('whitelistSection');
+  if (section.style.display === 'none') {
+    var response = await sendMessage({ type: 'getSettings' });
+    var whitelist = (response && response.settings && response.settings.whitelist) || [];
+    var list = document.getElementById('whitelistEntries');
+
+    if (!whitelist.length) {
+      list.innerHTML = '<li class="wl-empty">No domains whitelisted</li>';
+    } else {
+      list.innerHTML = whitelist.map(function (d) {
+        return '<li class="wl-entry">' +
+          '<span class="wl-domain">' + escapeHtml(d) + '</span>' +
+          '<button class="wl-remove" data-domain="' + escapeHtml(d) + '" title="Remove">\u00D7</button>' +
+          '</li>';
+      }).join('');
+
+      list.querySelectorAll('.wl-remove').forEach(function (btn) {
+        btn.addEventListener('click', async function () {
+          await sendMessage({ type: 'removeFromWhitelist', domain: btn.dataset.domain });
+          toggleWhitelistList();
+          updateWhitelistButton();
+        });
+      });
+    }
+    section.style.display = 'block';
+  } else {
+    section.style.display = 'none';
+  }
+}
+
 async function onModeChange(e) {
   const mode = e.target.value;
   await sendMessage({ type: 'setMode', mode });
@@ -218,7 +376,7 @@ async function updateDomainStatus() {
 
   if (whitelist.includes(currentDomain)) {
     statusEl.className = 'domain-status status-disabled';
-    statusEl.querySelector('.status-icon').textContent = '🚫';
+    statusEl.querySelector('.status-icon').textContent = '\uD83D\uDEAB';
     statusEl.querySelector('.status-text').textContent =
       chrome.i18n.getMessage('popupStatusWhitelisted');
   } else {
@@ -226,23 +384,23 @@ async function updateDomainStatus() {
     if (domainStats && domainStats.detected > 0) {
       if (domainStats.rejected > 0) {
         statusEl.className = 'domain-status status-success';
-        statusEl.querySelector('.status-icon').textContent = '✅';
+        statusEl.querySelector('.status-icon').textContent = '\u2705';
         statusEl.querySelector('.status-text').textContent =
           chrome.i18n.getMessage('popupStatusBannerRejected', [String(domainStats.rejected)]);
       } else if (domainStats.hidden > 0) {
         statusEl.className = 'domain-status status-info';
-        statusEl.querySelector('.status-icon').textContent = '👻';
+        statusEl.querySelector('.status-icon').textContent = '\uD83D\uDC7B';
         statusEl.querySelector('.status-text').textContent =
           chrome.i18n.getMessage('popupStatusBannerHidden');
       } else if (domainStats.skipped > 0) {
         statusEl.className = 'domain-status status-warning';
-        statusEl.querySelector('.status-icon').textContent = '⚠️';
+        statusEl.querySelector('.status-icon').textContent = '\u26A0\uFE0F';
         statusEl.querySelector('.status-text').textContent =
           chrome.i18n.getMessage('popupStatusBannerSkipped');
       }
     } else {
       statusEl.className = 'domain-status status-neutral';
-      statusEl.querySelector('.status-icon').textContent = '🔍';
+      statusEl.querySelector('.status-icon').textContent = '\uD83D\uDD0D';
       statusEl.querySelector('.status-text').textContent =
         chrome.i18n.getMessage('popupStatusNoBanner');
     }

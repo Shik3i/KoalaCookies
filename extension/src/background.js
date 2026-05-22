@@ -1,7 +1,7 @@
 try {
-  importScripts('storage.js');
+  importScripts('selectorMeta.js', 'storage.js');
 } catch (e) {
-  console.error('KoalaCookies: Failed to load storage module', e);
+  console.error('KoalaCookies: Failed to load modules', e);
 }
 
 const Service = {
@@ -95,6 +95,61 @@ const Service = {
 
   async getDevInfo(domain) {
     return await Storage.getBannerInfo(domain);
+  },
+
+  async getSelectorList() {
+    return Object.entries(BANNER_SELECTORS).map(([key, sel]) => ({
+      id: key,
+      name: BANNER_META[key] ? BANNER_META[key].name : key,
+      url: BANNER_META[key] ? BANNER_META[key].url : null,
+      selectors: {
+        container: sel.container || null,
+        rejectAll: sel.rejectAll || null,
+        settings: sel.settings || null,
+        saveSettings: sel.saveSettings || null,
+        acceptAll: sel.acceptAll || null
+      }
+    }));
+  },
+
+  async startPicker() {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (!tab || !tab.id) throw new Error('No active tab');
+    try {
+      await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        files: ['src/picker.js']
+      });
+    } catch (e) {
+      throw new Error('Cannot access this page. ' + e.message);
+    }
+  },
+
+  async saveCustomSelector(profile) {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    let domain = 'unknown';
+    try {
+      domain = new URL(tab.url).hostname;
+    } catch {}
+
+    const customSelectors = (await chrome.storage.local.get('customSelectors')).customSelectors || [];
+    customSelectors.push({
+      profile,
+      domain,
+      addedAt: new Date().toISOString()
+    });
+    await chrome.storage.local.set({ customSelectors });
+  },
+
+  async getCustomSelectors() {
+    const data = await chrome.storage.local.get('customSelectors');
+    return data.customSelectors || [];
+  },
+
+  async removeCustomSelector(index) {
+    const all = (await chrome.storage.local.get('customSelectors')).customSelectors || [];
+    all.splice(index, 1);
+    await chrome.storage.local.set({ customSelectors: all });
   }
 };
 
@@ -194,6 +249,60 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'getDevInfo') {
     Service.getDevInfo(message.domain).then(info => {
       sendResponse({ success: true, info });
+    }).catch(e => {
+      sendResponse({ success: false, error: e.message });
+    });
+    return true;
+  }
+
+  if (message.type === 'getSelectorList') {
+    try {
+      sendResponse({ success: true, providers: Service.getSelectorList() });
+    } catch (e) {
+      sendResponse({ success: false, error: e.message });
+    }
+    return true;
+  }
+
+  if (message.type === 'startPicker') {
+    Service.startPicker().then(() => {
+      sendResponse({ success: true });
+    }).catch(e => {
+      sendResponse({ success: false, error: e.message });
+    });
+    return true;
+  }
+
+  if (message.type === 'pickerElementCaptured') {
+    Service.saveCustomSelector(message.profile).then(() => {
+      return Service.getCustomSelectors();
+    }).then(selectors => {
+      sendResponse({ success: true, selectors });
+    }).catch(e => {
+      sendResponse({ success: false, error: e.message });
+    });
+    return true;
+  }
+
+  if (message.type === 'pickerCancelled') {
+    sendResponse({ success: true });
+    return false;
+  }
+
+  if (message.type === 'getCustomSelectors') {
+    Service.getCustomSelectors().then(selectors => {
+      sendResponse({ success: true, selectors });
+    }).catch(e => {
+      sendResponse({ success: false, error: e.message });
+    });
+    return true;
+  }
+
+  if (message.type === 'removeCustomSelector') {
+    Service.removeCustomSelector(message.index).then(() => {
+      return Service.getCustomSelectors();
+    }).then(selectors => {
+      sendResponse({ success: true, selectors });
     }).catch(e => {
       sendResponse({ success: false, error: e.message });
     });

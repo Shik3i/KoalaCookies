@@ -21,7 +21,7 @@ async function processPage() {
     return;
   }
 
-  const bannerResult = detectBanner();
+  const bannerResult = await detectBanner();
 
   if (!bannerResult) {
     processed = false;

@@ -342,6 +342,38 @@ body {
   background: rgba(245, 124, 0, 0.1);
 }
 
+.btn-primary {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 600;
+}
+
+.btn-primary:hover {
+  background: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+}
+
+.btn-small {
+  font-size: 11px;
+  padding: 3px 8px;
+}
+
+.log-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 4px 6px;
+}
+
+.btn-warning {
+  border-color: var(--color-warning);
+  color: var(--color-warning);
+}
+
+.btn-warning:hover {
+  background: rgba(245, 124, 0, 0.1);
+}
+
 .log-section {
   font-family: var(--font-mono);
   font-size: 11px;
@@ -360,6 +392,12 @@ body {
 .log-header-row .log-col-domain,
 .log-header-row .log-col-detail {
   color: var(--color-text-secondary);
+}
+
+.log-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 4px 6px;
 }
 
 .log-entries {
@@ -472,6 +510,288 @@ body {
   flex: 1;
   color: var(--color-text);
   word-break: break-all;
+}
+
+.picker-section {
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
+.picker-section h2 {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-secondary);
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+.picker-hint {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  margin-bottom: 8px;
+}
+
+.custom-selectors-section {
+  margin-bottom: 16px;
+}
+
+.custom-selectors-section h2 {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-secondary);
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.custom-selector-list {
+  max-height: 140px;
+  overflow-y: auto;
+}
+
+.custom-selector-entry {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 6px;
+  border-bottom: 1px solid var(--color-border);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.custom-selector-entry:last-child {
+  border-bottom: none;
+}
+
+.cs-domain {
+  width: 90px;
+  flex-shrink: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--color-text-secondary);
+}
+
+.cs-selector {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--color-primary);
+  background: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.cs-remove {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  border: none;
+  background: none;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+}
+
+.cs-remove:hover {
+  color: var(--color-danger);
+  background: rgba(198, 40, 40, 0.1);
+}
+
+.cs-empty {
+  padding: 16px 8px;
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 12px;
+}
+
+.selector-list-section {
+  margin-bottom: 8px;
+}
+
+.selector-list-section h2 {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-secondary);
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.selector-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.sl-loading,
+.sl-empty {
+  padding: 16px 8px;
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+}
+
+.selector-provider {
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  margin-bottom: 6px;
+  overflow: hidden;
+}
+
+.selector-provider-header {
+  padding: 6px 10px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--color-surface);
+  user-select: none;
+}
+
+.selector-provider-header:hover {
+  background: var(--color-border);
+}
+
+.prov-name {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--color-text);
+}
+
+.prov-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.prov-chevron {
+  font-size: 10px;
+  color: var(--color-text-secondary);
+  transition: transform 0.15s ease;
+}
+
+.selector-provider.open .prov-chevron {
+  transform: rotate(90deg);
+}
+
+.prov-link {
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.prov-link:hover {
+  color: var(--color-primary);
+}
+
+.selector-provider-body {
+  display: none;
+  padding: 6px 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-bg);
+}
+
+.selector-provider.open .selector-provider-body {
+  display: block;
+}
+
+.selector-field {
+  margin-bottom: 4px;
+}
+
+.selector-field:last-child {
+  margin-bottom: 0;
+}
+
+.selector-field-label {
+  display: inline-block;
+  width: 80px;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.selector-field-value {
+  color: var(--color-text);
+  word-break: break-all;
+  font-size: 10px;
+}
+
+.whitelist-section {
+  margin-bottom: 8px;
+}
+
+.whitelist-section h2 {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-secondary);
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.whitelist-entries {
+  list-style: none;
+  max-height: 140px;
+  overflow-y: auto;
+}
+
+.wl-entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 6px;
+  border-bottom: 1px solid var(--color-border);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.wl-entry:last-child {
+  border-bottom: none;
+}
+
+.wl-domain {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--color-text);
+}
+
+.wl-remove {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  border: none;
+  background: none;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+}
+
+.wl-remove:hover {
+  color: var(--color-danger);
+  background: rgba(198, 40, 40, 0.1);
+}
+
+.wl-empty {
+  padding: 12px 8px;
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: 12px;
 }
 
 .popup-footer {

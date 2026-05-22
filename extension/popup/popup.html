@@ -76,6 +76,10 @@
           <button id="resetStatsBtn" class="btn btn-danger">Reset Stats</button>
         </div>
       </section>
+      <section id="whitelistSection" class="whitelist-section" style="display:none;">
+        <h2>Whitelisted Domains</h2>
+        <ul id="whitelistEntries" class="whitelist-entries"></ul>
+      </section>
     </div>
 
     <div class="tab-content" id="tab-log">
@@ -86,6 +90,9 @@
           <span class="log-col-action">Action</span>
           <span class="log-col-method">Method</span>
           <span class="log-col-detail">Detail</span>
+        </div>
+        <div class="log-toolbar">
+          <button id="copyLogBtn" class="btn btn-small">📋 Copy as Text</button>
         </div>
         <div id="logEntries" class="log-entries">
           <div class="log-empty">No actions yet</div>
@@ -101,6 +108,26 @@
             <span class="dev-label">Status</span>
             <span class="dev-value">Open a page to see detection info</span>
           </div>
+        </div>
+      </section>
+
+      <section class="picker-section">
+        <h2>Element Picker</h2>
+        <p class="picker-hint">Click an element on the page to capture a custom selector. Press Esc to cancel.</p>
+        <button id="startPickerBtn" class="btn btn-primary">🔍 Pick Element</button>
+      </section>
+
+      <section class="custom-selectors-section">
+        <h2>Custom Selectors (<span id="customSelectorCount">0</span>)</h2>
+        <div id="customSelectorList" class="custom-selector-list">
+          <div class="cs-empty">No custom selectors captured yet</div>
+        </div>
+      </section>
+
+      <section class="selector-list-section">
+        <h2>Known Providers</h2>
+        <div id="selectorList" class="selector-list">
+          <div class="sl-loading">Loading...</div>
         </div>
       </section>
     </div>
