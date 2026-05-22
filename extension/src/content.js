@@ -32,25 +32,21 @@ async function processPage() {
     processed = false;
     return;
   }
-  await Storage.updateStats(domain, { detected: true });
 
   let result;
 
   const rejectResult = clickRejectAll(bannerResult);
   if (rejectResult) {
     result = { action: 'rejected', detail: rejectResult };
-    await Storage.updateStats(domain, { rejected: true });
   } else {
     const settingsResult = await clickSettingsAndRejectAll(bannerResult);
     if (settingsResult) {
-      result = { action: 'settings_reject', detail: settingsResult };
+      result = { action: 'rejected', detail: settingsResult };
     } else if (mode === 'aggressive') {
       hideBanner(bannerResult);
       result = { action: 'hidden', detail: 'Banner hidden (aggressive mode)' };
-      await Storage.updateStats(domain, { hidden: true });
     } else {
       result = { action: 'skipped', detail: 'No reject button found, banner left visible' };
-      await Storage.updateStats(domain, { skipped: true });
     }
   }
 

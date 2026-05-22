@@ -7,7 +7,8 @@
   "author": "KoalaCookies Contributors",
   "homepage_url": "https://github.com/Shik3i/KoalaCookies",
   "permissions": [
-    "storage"
+    "storage",
+    "activeTab"
   ],
   "host_permissions": [
     "<all_urls>"
@@ -32,7 +33,7 @@
   },
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
+      "matches": ["*://*/*"],
       "js": [
         "src/storage.js",
         "src/selectors.js",

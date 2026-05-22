@@ -45,12 +45,26 @@ const Service = {
       totalHidden: 0,
       byDomain: {}
     });
+  },
+
+  async recordBannerResult(domain, action) {
+    const update = { detected: true };
+    if (action === 'rejected') {
+      update.rejected = true;
+    } else if (action === 'hidden') {
+      update.hidden = true;
+    } else if (action === 'skipped') {
+      update.skipped = true;
+    }
+    await Storage.updateStats(domain, update);
   }
 };
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'bannerResult') {
-    Service.getStatsForPopup().then(stats => {
+    Service.recordBannerResult(message.domain, message.action).then(() => {
+      return Service.getStatsForPopup();
+    }).then(stats => {
       sendResponse({ success: true, stats });
     }).catch(e => {
       sendResponse({ success: false, error: e.message });

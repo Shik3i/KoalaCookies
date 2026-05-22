@@ -25,8 +25,18 @@ async function init() {
   await updateDomainStatus();
 }
 
+async function sendMessage(msg) {
+  try {
+    return await chrome.runtime.sendMessage(msg);
+  } catch (err) {
+    console.error('KoalaCookies: sendMessage failed', err);
+    showToast('Connection error');
+    return null;
+  }
+}
+
 async function loadStats() {
-  const response = await chrome.runtime.sendMessage({ type: 'getStats' });
+  const response = await sendMessage({ type: 'getStats' });
   if (response && response.success) {
     const s = response.stats;
     document.getElementById('statDetected').textContent = s.totalDetected || 0;
@@ -37,7 +47,7 @@ async function loadStats() {
 }
 
 async function loadSettings() {
-  const response = await chrome.runtime.sendMessage({ type: 'getSettings' });
+  const response = await sendMessage({ type: 'getSettings' });
   if (response && response.success) {
     document.getElementById('modeSelect').value = response.settings.mode || 'gentle';
   }
@@ -45,13 +55,13 @@ async function loadSettings() {
 
 async function onModeChange(e) {
   const mode = e.target.value;
-  await chrome.runtime.sendMessage({ type: 'setMode', mode });
+  await sendMessage({ type: 'setMode', mode });
   showToast('Mode updated');
 }
 
 async function onResetStats() {
   if (confirm('Reset all statistics? This cannot be undone.')) {
-    await chrome.runtime.sendMessage({ type: 'resetStats' });
+    await sendMessage({ type: 'resetStats' });
     await loadStats();
     showToast('Statistics reset');
   }
@@ -60,17 +70,17 @@ async function onResetStats() {
 async function onToggleWhitelist() {
   if (!currentDomain) return;
 
-  const response = await chrome.runtime.sendMessage({ type: 'getSettings' });
+  const response = await sendMessage({ type: 'getSettings' });
   if (!response || !response.success) return;
 
   const whitelist = response.settings.whitelist || [];
   const isWhitelisted = whitelist.includes(currentDomain);
 
   if (isWhitelisted) {
-    await chrome.runtime.sendMessage({ type: 'removeFromWhitelist', domain: currentDomain });
+    await sendMessage({ type: 'removeFromWhitelist', domain: currentDomain });
     showToast('Removed from whitelist');
   } else {
-    await chrome.runtime.sendMessage({ type: 'addToWhitelist', domain: currentDomain });
+    await sendMessage({ type: 'addToWhitelist', domain: currentDomain });
     showToast('Added to whitelist');
   }
 
@@ -79,7 +89,7 @@ async function onToggleWhitelist() {
 }
 
 async function updateWhitelistButton() {
-  const response = await chrome.runtime.sendMessage({ type: 'getSettings' });
+  const response = await sendMessage({ type: 'getSettings' });
   if (!response || !response.success) return;
 
   const whitelist = response.settings.whitelist || [];
@@ -100,10 +110,10 @@ async function updateDomainStatus() {
   const statusEl = document.getElementById('domainStatus');
   if (!currentDomain) return;
 
-  const response = await chrome.runtime.sendMessage({ type: 'getStats' });
+  const response = await sendMessage({ type: 'getStats' });
   if (!response || !response.success) return;
 
-  const whitelistResponse = await chrome.runtime.sendMessage({ type: 'getSettings' });
+  const whitelistResponse = await sendMessage({ type: 'getSettings' });
   const whitelist = whitelistResponse.settings.whitelist || [];
 
   if (whitelist.includes(currentDomain)) {
