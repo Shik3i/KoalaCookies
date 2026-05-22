@@ -45,6 +45,8 @@ const Service = {
       totalHidden: 0,
       byDomain: {}
     });
+    await Storage.clearLog();
+    await Storage.set('bannerInfo', {});
   },
 
   async getPopupData() {
@@ -54,7 +56,28 @@ const Service = {
     return { stats, settings: { mode, whitelist } };
   },
 
-  async recordBannerResult(domain, action) {
+  async recordBannerResult(domain, action, detail, detectionInfo) {
+    const logInfo = extractLogInfo(detail, action);
+    const logEntry = {
+      timestamp: new Date().toISOString(),
+      domain: domain,
+      action: action,
+      method: logInfo.method,
+      detail: logInfo.detail
+    };
+    await Storage.addLogEntry(logEntry);
+
+    if (detectionInfo) {
+      await Storage.setBannerInfo(domain, {
+        provider: detectionInfo.provider,
+        detectionMethod: detectionInfo.detectionMethod,
+        containerInfo: detectionInfo.containerInfo,
+        action: action,
+        resultDetail: detail,
+        timestamp: new Date().toISOString()
+      });
+    }
+
     const update = { detected: true };
     if (action === 'rejected') {
       update.rejected = true;
@@ -64,12 +87,29 @@ const Service = {
       update.skipped = true;
     }
     await Storage.updateStats(domain, update);
+  },
+
+  async getActionLog() {
+    return await Storage.getActionLog();
+  },
+
+  async getDevInfo(domain) {
+    return await Storage.getBannerInfo(domain);
   }
 };
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'bannerResult') {
-    Service.recordBannerResult(message.domain, message.action).then(() => {
+    Service.recordBannerResult(
+      message.domain,
+      message.action,
+      message.detail,
+      {
+        provider: message.provider,
+        detectionMethod: message.detectionMethod,
+        containerInfo: message.containerInfo
+      }
+    ).then(() => {
       return Service.getStatsForPopup();
     }).then(stats => {
       sendResponse({ success: true, stats });
@@ -141,7 +181,38 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     });
     return true;
   }
+
+  if (message.type === 'getActionLog') {
+    Service.getActionLog().then(log => {
+      sendResponse({ success: true, log });
+    }).catch(e => {
+      sendResponse({ success: false, error: e.message });
+    });
+    return true;
+  }
+
+  if (message.type === 'getDevInfo') {
+    Service.getDevInfo(message.domain).then(info => {
+      sendResponse({ success: true, info });
+    }).catch(e => {
+      sendResponse({ success: false, error: e.message });
+    });
+    return true;
+  }
 });
+
+function extractLogInfo(detail, action) {
+  if (typeof detail === 'object' && detail !== null && detail.method) {
+    return { method: detail.method, detail: detail.text || '-' };
+  }
+  if (action === 'hidden') {
+    return { method: 'aggressive', detail: '-' };
+  }
+  if (action === 'skipped') {
+    return { method: '-', detail: typeof detail === 'string' ? detail : '-' };
+  }
+  return { method: '-', detail: '-' };
+}
 
 chrome.runtime.onInstalled.addListener(async () => {
   const existing = await Storage.get('mode');

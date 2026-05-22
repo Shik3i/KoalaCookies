@@ -60,5 +60,73 @@
   "popupStatusNoBanner": {
     "message": "No banner detected yet",
     "description": "Domain status when no banner has been seen on this site"
+  },
+  "popupTabStats": {
+    "message": "Stats",
+    "description": "Stats tab label"
+  },
+  "popupTabLog": {
+    "message": "Log",
+    "description": "Log tab label"
+  },
+  "popupTabDev": {
+    "message": "Dev",
+    "description": "Dev tab label"
+  },
+  "popupLogHeaderTime": {
+    "message": "Time",
+    "description": "Log table header for timestamp column"
+  },
+  "popupLogHeaderDomain": {
+    "message": "Domain",
+    "description": "Log table header for domain column"
+  },
+  "popupLogHeaderAction": {
+    "message": "Action",
+    "description": "Log table header for action column"
+  },
+  "popupLogHeaderMethod": {
+    "message": "Method",
+    "description": "Log table header for method column"
+  },
+  "popupLogHeaderDetail": {
+    "message": "Detail",
+    "description": "Log table header for detail column"
+  },
+  "popupLogEmpty": {
+    "message": "No actions yet",
+    "description": "Shown when the action log is empty"
+  },
+  "popupDevLabelProvider": {
+    "message": "Provider",
+    "description": "Dev tab label for detected provider"
+  },
+  "popupDevLabelDetection": {
+    "message": "Detection",
+    "description": "Dev tab label for detection method"
+  },
+  "popupDevLabelContainer": {
+    "message": "Container",
+    "description": "Dev tab label for container element"
+  },
+  "popupDevLabelAction": {
+    "message": "Action",
+    "description": "Dev tab label for performed action"
+  },
+  "popupDevLabelResult": {
+    "message": "Result",
+    "description": "Dev tab label for result detail"
+  },
+  "popupDevLabelLastSeen": {
+    "message": "Last seen",
+    "description": "Dev tab label for last detection timestamp"
+  },
+  "popupDevNoBanner": {
+    "message": "No banner detected on this page",
+    "description": "Dev tab status when no banner has been detected"
+  },
+  "popupDevOpenPage": {
+    "message": "Open a page to see detection info",
+    "description": "Dev tab placeholder when no domain is active"
   }
 }

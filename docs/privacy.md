@@ -13,6 +13,8 @@ Die Extension speichert ausschließlich folgende Daten **lokal im Browser** via 
 | Datenkategorie | Beschreibung | Zweck |
 |---|---|---|
 | **Statistiken** | Anzahl erkannter/abgelehnter/übersprungener Cookie-Banner, aufgeschlüsselt nach Domain | Anzeige im Popup für den Nutzer |
+| **Action-Log** | Letzte 10 Aktionen (Zeitstempel, Domain, Aktion, Methode, Button-Text) | Nachvollziehbarkeit im Popup |
+| **Dev-Info** | Technische Details zur letzten Banner-Erkennung pro Domain | Debugging im Popup |
 | **Einstellungen** | Gewählter Modus (sanft/aggressiv), Domain-Whitelist | Konfiguration des Verhaltens |
 
 ### Was wird NICHT gespeichert oder übermittelt?
@@ -68,5 +70,5 @@ Bei Fragen zum Datenschutz: Erstelle ein Issue im GitHub-Repository oder kontakt
 
 ---
 
-*Letzte Änderung: 2024 (Projektbeginn)*
-*Wirksam ab: v0.1.0*
+*Letzte Änderung: Mai 2026*
+*Wirksam ab: v1.0.0*

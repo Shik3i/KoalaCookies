@@ -20,6 +20,10 @@ async function init() {
   document.getElementById('resetStatsBtn').addEventListener('click', onResetStats);
   document.getElementById('whitelistBtn').addEventListener('click', onToggleWhitelist);
 
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+  });
+
   await updateWhitelistButton();
   await updateDomainStatus();
 }
@@ -32,6 +36,16 @@ async function sendMessage(msg) {
     showToast(chrome.i18n.getMessage('popupToastConnectionError'));
     return null;
   }
+}
+
+function switchTab(tabName) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.querySelector('.tab-btn[data-tab="' + tabName + '"]').classList.add('active');
+  document.getElementById('tab-' + tabName).classList.add('active');
+
+  if (tabName === 'log') loadActionLog();
+  if (tabName === 'dev') loadDevInfo();
 }
 
 async function loadPopupData() {
@@ -62,6 +76,83 @@ async function loadSettings() {
   if (response && response.success) {
     document.getElementById('modeSelect').value = response.settings.mode || 'gentle';
   }
+}
+
+function formatTime(isoString) {
+  const d = new Date(isoString);
+  return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function actionClass(action) {
+  if (action === 'rejected') return 'log-rejected';
+  if (action === 'hidden') return 'log-hidden';
+  return 'log-skipped';
+}
+
+async function loadActionLog() {
+  const response = await sendMessage({ type: 'getActionLog' });
+  const container = document.getElementById('logEntries');
+  if (!response || !response.success || !response.log || response.log.length === 0) {
+    container.innerHTML = '<div class="log-empty">' + chrome.i18n.getMessage('popupLogEmpty') + '</div>';
+    return;
+  }
+
+  container.innerHTML = response.log.map(entry => {
+    const time = formatTime(entry.timestamp);
+    const cls = actionClass(entry.action);
+    return '<div class="log-entry">' +
+      '<span class="log-col-time" title="' + escapeHtml(time) + '">' + time + '</span>' +
+      '<span class="log-col-domain" title="' + escapeHtml(entry.domain) + '">' + escapeHtml(entry.domain) + '</span>' +
+      '<span class="log-col-action ' + cls + '">' + entry.action + '</span>' +
+      '<span class="log-col-method" title="' + escapeHtml(entry.method) + '">' + escapeHtml(entry.method) + '</span>' +
+      '<span class="log-col-detail" title="' + escapeHtml(entry.detail) + '">' + escapeHtml(entry.detail) + '</span>' +
+      '</div>';
+  }).join('');
+}
+
+async function loadDevInfo() {
+  const container = document.getElementById('devInfo');
+  if (!currentDomain) {
+    container.innerHTML = '<div class="dev-row"><span class="dev-label">Status</span><span class="dev-value">' +
+      chrome.i18n.getMessage('popupDevOpenPage') + '</span></div>';
+    return;
+  }
+
+  const response = await sendMessage({ type: 'getDevInfo', domain: currentDomain });
+  if (!response || !response.success || !response.info) {
+    container.innerHTML = '<div class="dev-row"><span class="dev-label">Status</span><span class="dev-value">' +
+      chrome.i18n.getMessage('popupDevNoBanner') + '</span></div>';
+    return;
+  }
+
+  const info = response.info;
+  const resultStr = typeof info.resultDetail === 'object'
+    ? JSON.stringify(info.resultDetail)
+    : String(info.resultDetail || '-');
+
+  var i18n = chrome.i18n.getMessage;
+  var rows = [
+    { label: i18n('popupLogHeaderDomain'), value: currentDomain },
+    { label: i18n('popupDevLabelProvider'), value: info.provider || 'unknown' },
+    { label: i18n('popupDevLabelDetection'), value: info.detectionMethod || 'none' },
+    { label: i18n('popupDevLabelContainer'), value: info.containerInfo || '-' },
+    { label: i18n('popupDevLabelAction'), value: info.action || '-' },
+    { label: i18n('popupDevLabelResult'), value: resultStr },
+    { label: i18n('popupDevLabelLastSeen'), value: info.timestamp ? formatTime(info.timestamp) : '-' }
+  ];
+
+  container.innerHTML = rows.map(function (r) {
+    return '<div class="dev-row">' +
+      '<span class="dev-label">' + escapeHtml(r.label) + '</span>' +
+      '<span class="dev-value">' + escapeHtml(r.value) + '</span>' +
+      '</div>';
+  }).join('');
 }
 
 async function onModeChange(e) {

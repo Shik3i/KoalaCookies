@@ -13,62 +13,97 @@
       <span class="logo-icon">🐨</span>
       <h1>KoalaCookies</h1>
     </div>
-    <span class="version">v0.1.0</span>
+    <span class="version">v1.0.0</span>
   </header>
 
+  <nav class="tab-nav">
+    <button class="tab-btn active" data-tab="stats">Stats</button>
+    <button class="tab-btn" data-tab="log">Log</button>
+    <button class="tab-btn" data-tab="dev">Dev</button>
+  </nav>
+
   <main class="popup-main">
-    <section class="status-section">
-      <div class="current-domain">
-        <span class="label">Current Site</span>
-        <span id="currentDomain" class="value">Loading...</span>
-      </div>
-      <div id="domainStatus" class="domain-status status-neutral">
-        <span class="status-icon">⏳</span>
-        <span class="status-text">Checking...</span>
-      </div>
-    </section>
+    <div class="tab-content active" id="tab-stats">
+      <section class="status-section">
+        <div class="current-domain">
+          <span class="label">Current Site</span>
+          <span id="currentDomain" class="value">Loading...</span>
+        </div>
+        <div id="domainStatus" class="domain-status status-neutral">
+          <span class="status-icon">⏳</span>
+          <span class="status-text">Checking...</span>
+        </div>
+      </section>
 
-    <section class="stats-section">
-      <h2>Statistics</h2>
-      <div class="stats-grid">
-        <div class="stat-card">
-          <span class="stat-value" id="statDetected">0</span>
-          <span class="stat-label">Detected</span>
+      <section class="stats-section">
+        <h2>Statistics</h2>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span class="stat-value" id="statDetected">0</span>
+            <span class="stat-label">Detected</span>
+          </div>
+          <div class="stat-card stat-success">
+            <span class="stat-value" id="statRejected">0</span>
+            <span class="stat-label">Rejected</span>
+          </div>
+          <div class="stat-card stat-warning">
+            <span class="stat-value" id="statSkipped">0</span>
+            <span class="stat-label">Skipped</span>
+          </div>
+          <div class="stat-card stat-info">
+            <span class="stat-value" id="statHidden">0</span>
+            <span class="stat-label">Hidden</span>
+          </div>
         </div>
-        <div class="stat-card stat-success">
-          <span class="stat-value" id="statRejected">0</span>
-          <span class="stat-label">Rejected</span>
-        </div>
-        <div class="stat-card stat-warning">
-          <span class="stat-value" id="statSkipped">0</span>
-          <span class="stat-label">Skipped</span>
-        </div>
-        <div class="stat-card stat-info">
-          <span class="stat-value" id="statHidden">0</span>
-          <span class="stat-label">Hidden</span>
-        </div>
-      </div>
-    </section>
+      </section>
 
-    <section class="settings-section">
-      <h2>Settings</h2>
-      <div class="setting-row">
-        <div class="setting-info">
-          <span class="setting-label">Mode</span>
-          <span class="setting-desc">How to handle banners with no reject button</span>
+      <section class="settings-section">
+        <h2>Settings</h2>
+        <div class="setting-row">
+          <div class="setting-info">
+            <span class="setting-label">Mode</span>
+            <span class="setting-desc">How to handle banners with no reject button</span>
+          </div>
+          <select id="modeSelect" class="mode-select">
+            <option value="gentle">Gentle (keep visible)</option>
+            <option value="aggressive">Aggressive (hide banner)</option>
+          </select>
         </div>
-        <select id="modeSelect" class="mode-select">
-          <option value="gentle">Gentle (keep visible)</option>
-          <option value="aggressive">Aggressive (hide banner)</option>
-        </select>
-      </div>
-      <div class="setting-row">
-        <button id="whitelistBtn" class="btn btn-secondary">
-          <span id="whitelistAction">Add</span> to Whitelist
-        </button>
-        <button id="resetStatsBtn" class="btn btn-danger">Reset Stats</button>
-      </div>
-    </section>
+        <div class="setting-row">
+          <button id="whitelistBtn" class="btn btn-secondary">
+            <span id="whitelistAction">Add</span> to Whitelist
+          </button>
+          <button id="resetStatsBtn" class="btn btn-danger">Reset Stats</button>
+        </div>
+      </section>
+    </div>
+
+    <div class="tab-content" id="tab-log">
+      <section class="log-section">
+        <div class="log-header-row">
+          <span class="log-col-time">Time</span>
+          <span class="log-col-domain">Domain</span>
+          <span class="log-col-action">Action</span>
+          <span class="log-col-method">Method</span>
+          <span class="log-col-detail">Detail</span>
+        </div>
+        <div id="logEntries" class="log-entries">
+          <div class="log-empty">No actions yet</div>
+        </div>
+      </section>
+    </div>
+
+    <div class="tab-content" id="tab-dev">
+      <section class="dev-section">
+        <h2>Debug Info</h2>
+        <div id="devInfo" class="dev-info">
+          <div class="dev-row">
+            <span class="dev-label">Status</span>
+            <span class="dev-value">Open a page to see detection info</span>
+          </div>
+        </div>
+      </section>
+    </div>
   </main>
 
   <footer class="popup-footer">

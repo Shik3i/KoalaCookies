@@ -60,5 +60,73 @@
   "popupStatusNoBanner": {
     "message": "Noch kein Banner erkannt",
     "description": "Domain-Status wenn auf dieser Seite noch kein Banner gesehen wurde"
+  },
+  "popupTabStats": {
+    "message": "Statistik",
+    "description": "Statistik-Tab-Label"
+  },
+  "popupTabLog": {
+    "message": "Log",
+    "description": "Log-Tab-Label"
+  },
+  "popupTabDev": {
+    "message": "Dev",
+    "description": "Dev-Tab-Label"
+  },
+  "popupLogHeaderTime": {
+    "message": "Zeit",
+    "description": "Log-Tabellenkopf für Zeitstempel"
+  },
+  "popupLogHeaderDomain": {
+    "message": "Domain",
+    "description": "Log-Tabellenkopf für Domain"
+  },
+  "popupLogHeaderAction": {
+    "message": "Aktion",
+    "description": "Log-Tabellenkopf für Aktion"
+  },
+  "popupLogHeaderMethod": {
+    "message": "Methode",
+    "description": "Log-Tabellenkopf für Methode"
+  },
+  "popupLogHeaderDetail": {
+    "message": "Detail",
+    "description": "Log-Tabellenkopf für Detail"
+  },
+  "popupLogEmpty": {
+    "message": "Noch keine Aktionen",
+    "description": "Angezeigt wenn das Aktionslog leer ist"
+  },
+  "popupDevLabelProvider": {
+    "message": "Anbieter",
+    "description": "Dev-Tab-Label für erkannten Anbieter"
+  },
+  "popupDevLabelDetection": {
+    "message": "Erkennung",
+    "description": "Dev-Tab-Label für Erkennungsmethode"
+  },
+  "popupDevLabelContainer": {
+    "message": "Container",
+    "description": "Dev-Tab-Label für Container-Element"
+  },
+  "popupDevLabelAction": {
+    "message": "Aktion",
+    "description": "Dev-Tab-Label für ausgeführte Aktion"
+  },
+  "popupDevLabelResult": {
+    "message": "Ergebnis",
+    "description": "Dev-Tab-Label für Ergebnisdetail"
+  },
+  "popupDevLabelLastSeen": {
+    "message": "Zuletzt gesehen",
+    "description": "Dev-Tab-Label für Zeitstempel der letzten Erkennung"
+  },
+  "popupDevNoBanner": {
+    "message": "Kein Banner auf dieser Seite erkannt",
+    "description": "Dev-Tab-Status wenn kein Banner erkannt wurde"
+  },
+  "popupDevOpenPage": {
+    "message": "Seite öffnen um Erkennungsinfos zu sehen",
+    "description": "Dev-Tab-Platzhalter wenn keine Domain aktiv ist"
   }
 }

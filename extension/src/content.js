@@ -54,8 +54,21 @@ async function processPage() {
     type: 'bannerResult',
     domain: domain,
     action: result.action,
-    detail: result.detail
+    detail: result.detail,
+    provider: bannerResult.provider,
+    detectionMethod: bannerResult.method,
+    containerInfo: getContainerInfo(bannerResult.container)
   }).catch(() => {});
+}
+
+function getContainerInfo(container) {
+  if (!container) return '';
+  const tag = container.tagName.toLowerCase();
+  const id = container.id ? '#' + container.id : '';
+  const classes = container.className && typeof container.className === 'string'
+    ? '.' + container.className.trim().split(/\s+/).slice(0, 3).join('.')
+    : '';
+  return tag + id + classes;
 }
 
 function setupObserver() {

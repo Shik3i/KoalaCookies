@@ -7,7 +7,9 @@ const DEFAULTS = {
     totalSkipped: 0,
     totalHidden: 0,
     byDomain: {}
-  }
+  },
+  actionLog: [],
+  bannerInfo: {}
 };
 
 const Storage = {
@@ -37,6 +39,31 @@ const Storage = {
 
   async getStats() {
     return await this.get('stats');
+  },
+
+  async addLogEntry(entry) {
+    const log = await this.get('actionLog');
+    log.unshift(entry);
+    await this.set('actionLog', log.slice(0, 10));
+  },
+
+  async getActionLog() {
+    return await this.get('actionLog');
+  },
+
+  async clearLog() {
+    await this.set('actionLog', []);
+  },
+
+  async setBannerInfo(domain, info) {
+    const allInfo = await this.get('bannerInfo');
+    allInfo[domain] = info;
+    await this.set('bannerInfo', allInfo);
+  },
+
+  async getBannerInfo(domain) {
+    const allInfo = await this.get('bannerInfo');
+    return allInfo[domain] || null;
   },
 
   async updateStats(domain, update) {

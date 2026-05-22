@@ -22,17 +22,21 @@ KoalaCookies ist eine datenschutzfreundliche, quelloffene Browser-Erweiterung f�
 - **"Sanft"-Modus (Standard):** Wenn kein Ablehnungs-Button gefunden wird, bleibt das Banner sichtbar. Der Nutzer soll manuell über das "Mehr Optionen"-Menü entscheiden.
 - **"Aggressiv"-Modus (optional):** Wenn keine Ablehnung möglich ist, wird das Banner per CSS ausgeblendet (`display: none`).
 
-### 4. Interne Statistik
+### 4. Interne Statistik & Logging
 - Anzahl erkannter Cookie-Banner
 - Anzahl erfolgreich abgelehnter Banner
 - Anzahl nicht bearbeitbarer Banner (gefunden, aber kein Button)
 - Anzahl ausgeblendeter Banner (nur im aggressiven Modus)
 - Statistik per Domain und global
+- **Action-Log:** Letzte 10 Aktionen mit Zeitstempel, Domain, Methode, Button-Text
+- **Dev-Info:** Technische Debug-Infos pro Domain (Provider, Erkennungsmethode, Container)
 - Lokale Speicherung via `chrome.storage.local` (keine externe Datenübermittlung)
 
 ### 5. Popup-UI
-- Anzeige der aktuellen Seite und ob ein Banner erkannt/behandelt wurde
-- Statistiken einsehbar
+- Tab-Navigation (Stats | Log | Dev)
+- Stats-Tab: Statistik-Anzeige (erkannt, rejected, skipped, hidden)
+- Log-Tab: Letzte 10 Aktionen mit Zeitstempel, Domain, Methode, Button-Text
+- Dev-Tab: Technische Debug-Infos (Provider, Erkennungsmethode, Container, Strategie)
 - Toggle für "Sanft" vs. "Aggressiv" Modus
 - Domain-Whitelist zum Deaktivieren auf bestimmten Seiten
 - Dark Mode Support
@@ -68,10 +72,10 @@ extension/
 ```
 
 ### Datenfluss
-1. **Page Load** → Content Script injiziert → `detector.js` scannt DOM auf Cookie-Banner
+1. **Page Load** → Content Script injiziert → `selectors.js` scannt DOM auf Cookie-Banner
 2. **Banner erkannt** → `clicker.js` sucht nach passendem Button → führt Klick aus
-3. **Ergebnis** → `stats.js` aktualisiert Zähler → persistiert via `chrome.storage.local`
-4. **Popup öffnen** → Liest Stats aus Storage → Zeigt aktuelle Infos an
+3. **Ergebnis** → `storage.js` aktualisiert Zähler, Action-Log und Dev-Info → persistiert via `chrome.storage.local`
+4. **Popup öffnen** → Liest Stats, Log und Dev-Info aus Storage → Zeigt aktuelle Infos an
 
 ### Berechtigungen (minimales Prinzip)
 - `<all_urls>` oder `activeTab` + Host-Permissions für DOM-Zugriff
@@ -82,29 +86,31 @@ extension/
 
 ### v0.1.0 - MVP / Prototyp
 - [x] Projektstruktur und Build-Pipeline
-- [ ] Banner-Erkennung (Keyword-basiert + grundlegende Selektoren)
-- [ ] Reject-All-Klick (einfaches Text-Matching)
-- [ ] Basis-Statistik (Anzahl rejected)
-- [ ] Popup mit Statistik-Anzeige
-- [ ] Sanft-Modus (kein Ausblenden, wenn kein Button)
+- [x] Banner-Erkennung (Keyword-basiert + grundlegende Selektoren)
+- [x] Reject-All-Klick (einfaches Text-Matching)
+- [x] Basis-Statistik (Anzahl rejected)
+- [x] Popup mit Statistik-Anzeige
+- [x] Sanft-Modus (kein Ausblenden, wenn kein Button)
 
 ### v0.2.0 - Verbesserte Erkennung
-- [ ] Erweiterte Selektordatenbank (OneTrust, Cookiebot, etc.)
-- [ ] Shadow-DOM Unterstützung
+- [x] Erweiterte Selektordatenbank (OneTrust, Cookiebot, etc.)
+- [x] Shadow-DOM Unterstützung
 - [ ] Iframe-basierte Banner
-- [ ] "Mehr Optionen" → Alle Toggles deaktivieren
+- [x] "Mehr Optionen" → Alle Toggles deaktivieren
 
 ### v0.3.0 - Erweiterte Features
-- [ ] Aggressiv-Modus (Banner ausblenden)
-- [ ] Domain-Whitelist
-- [ ] i18n (Deutsch + Englisch)
-- [ ] Dark Mode
+- [x] Aggressiv-Modus (Banner ausblenden)
+- [x] Domain-Whitelist
+- [x] i18n (Deutsch + Englisch)
+- [x] Dark Mode
 
 ### v1.0.0 - Release
 - [ ] Vollständige Testabdeckung
-- [ ] Performance-Optimierung (MutationObserver statt Polling)
+- [x] Performance-Optimierung (MutationObserver statt Polling)
 - [ ] Store-Listing vorbereiten (Firefox Add-ons + Chrome Web Store)
-- [ ] Firefox + Chrome ZIP-Builds via CI/CD
+- [x] Firefox + Chrome ZIP-Builds via CI/CD
+- [x] Action-Log (letzte 10 Aktionen im Popup)
+- [x] Dev-Tab (technische Debug-Infos zur aktuellen Seite)
 
 ## Technische Entscheidungen
 

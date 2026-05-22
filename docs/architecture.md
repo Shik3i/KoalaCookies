@@ -48,23 +48,6 @@ KoalaCookies ist eine Browser-Erweiterung nach dem Manifest V3 Standard. Sie bes
 5. `storage.js` aktualisiert und persistiert die Statistik via `chrome.storage.local`
 
 **Erkennungsstrategien (`selectors.js`):**
-- **Keyword-Scan:** Durchsucht sichtbare Textknoten nach typischen Cookie-Banner-Phrasen (`"cookie"`, `"consent"`, `"datenschutz"`, `"zustimmen"`, etc.)
-- **Selektor-Matching:** Prüft gegen eine Datenbank bekannter CSS-Selektoren:
-  ```js
-  const KNOWN_SELECTORS = [
-    '#onetrust-banner-sdk',
-    '#CybotCookiebotDialog',
-    '.cookie-consent',
-    '#cookie-law-info-bar',
-    '.cc-banner',
-    '#usercentrics-root',
-    '.cookie-banner',
-    '[data-testid="cookie-banner"]',
-    '#qc-cmp2-container',
-    '.iubenda-cs-banner',
-    // ... erweiterbar
-  ];
-  ```
 - **Heuristik:** Prüft `z-index`, `position: fixed`, Viewport-Position (Bottom/Top)
 - **MutationObserver:** Überwacht DOM-Änderungen für verzögert geladene Banner
 - **Shadow-DOM:** Rekursive Durchsuchung von Shadow-Roots
@@ -89,15 +72,15 @@ KoalaCookies ist eine Browser-Erweiterung nach dem Manifest V3 Standard. Sie bes
 **Aufgabe:** Koordiniert Nachrichten, persistiert Statistiken, verwaltet Einstellungen.
 
 **Events:**
-- `chrome.runtime.onMessage` - Empfängt Statistik-Updates vom Content Script
-- `chrome.tabs.onUpdated` - Verfolgt Seitenwechsel für korrekte Statistik-Zuordnung
+- `chrome.runtime.onMessage` - Empfängt Statistik-Updates, Log-Anfragen und Dev-Info vom Content Script und Popup
 - `chrome.runtime.onInstalled` - Initialisiert Default-Einstellungen
-- `chrome.action.onClicked` - (optional) Direkter Klick auf das Icon
 - `importScripts('storage.js')` - Lädt das Storage-Modul in den Service Worker
 
 **Funktionen:**
 - Statistik-Updates entgegennehmen und aggregieren
-- Stats an Popup ausliefern (auf Anfrage)
+- Action-Log schreiben (max. 10 Eintrage, neueste zuerst)
+- Dev-Info per Domain speichern (Provider, Erkennungsmethode, Container)
+- Stats, Log und Dev-Info an Popup ausliefern (auf Anfrage)
 - Modus-Wechsel (gentle/aggressive) persistieren
 - Domain-Whitelist verwalten
 
@@ -106,10 +89,9 @@ KoalaCookies ist eine Browser-Erweiterung nach dem Manifest V3 Standard. Sie bes
 **Aufgabe:** Zeigt Statistiken und Einstellungen an.
 
 **Ansichten:**
-- Aktuelle Domain und Banner-Status
-- Button zum Umschalten gentle/aggressive
-- Gesamtstatistik (Total erkannt, rejected, skipped)
-- Link zu Einstellungen / Whitelist
+- **Stats-Tab:** Aktuelle Domain und Banner-Status, Gesamtstatistik, Modus-Umschaltung, Whitelist-Button
+- **Log-Tab:** Letzte 10 Aktionen mit Zeitstempel, Domain, Aktion, Methode und Detail
+- **Dev-Tab:** Technische Debug-Infos (Provider, Erkennungsmethode, Container-Element, Strategie)
 - Dark Mode (systemabhängig)
 
 ### 4. Storage (`extension/src/storage.js`)
@@ -119,6 +101,8 @@ KoalaCookies ist eine Browser-Erweiterung nach dem Manifest V3 Standard. Sie bes
 **Datenmodell:**
 ```json
 {
+  "mode": "gentle",
+  "whitelist": [],
   "stats": {
     "totalDetected": 0,
     "totalRejected": 0,
@@ -134,9 +118,24 @@ KoalaCookies ist eine Browser-Erweiterung nach dem Manifest V3 Standard. Sie bes
       }
     }
   },
-  "settings": {
-    "mode": "gentle",
-    "whitelist": []
+  "actionLog": [
+    {
+      "timestamp": "2024-01-15T14:32:05.000Z",
+      "domain": "example.com",
+      "action": "rejected",
+      "method": "text_match",
+      "detail": "Alle ablehnen"
+    }
+  ],
+  "bannerInfo": {
+    "example.com": {
+      "provider": "onetrust",
+      "detectionMethod": "selector",
+      "containerInfo": "div#onetrust-banner-sdk",
+      "action": "rejected",
+      "resultDetail": { "method": "text_match", "text": "Alle ablehnen" },
+      "timestamp": "2024-01-15T14:32:05.000Z"
+    }
   }
 }
 ```
@@ -167,8 +166,7 @@ export const BANNER_SELECTORS = {
 ```json
 {
   "permissions": ["storage", "activeTab"],
-  "host_permissions": ["<all_urls>"],
-  "optional_permissions": []
+  "host_permissions": ["<all_urls>"]
 }
 ```
 
@@ -179,8 +177,8 @@ export const BANNER_SELECTORS = {
 ```
 scripts/
 ├── build.sh           # Baut Firefox + Chrome ZIPs
-├── bump-version.sh    # Hilft beim Versions-Bump vor Release
-└── lint.sh            # ESLint + Prettier Check
+├── generate-icons.sh  # Generiert Icons via Python
+└── generate_icons.py  # Python-Script: PNG-Icons aus Code
 ```
 
 **build.sh** erzeugt:
