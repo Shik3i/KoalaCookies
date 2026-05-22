@@ -1,21 +1,21 @@
 function detectBannerViaSelectors() {
   for (const [provider, selectors] of Object.entries(BANNER_SELECTORS)) {
     const container = document.querySelector(selectors.container);
-    if (container && isVisible(container)) {
+    if (container && isVisible(container, false)) {
       return { provider, container, selectors };
     }
   }
   return null;
 }
 
-function isVisible(element) {
+function isVisible(element, requireDimensions = true) {
   if (!element) return false;
   const style = getComputedStyle(element);
-  return style.display !== 'none' &&
+  const visible = style.display !== 'none' &&
          style.visibility !== 'hidden' &&
-         style.opacity !== '0' &&
-         element.offsetWidth > 0 &&
-         element.offsetHeight > 0;
+         style.opacity !== '0';
+  if (!requireDimensions) return visible;
+  return visible && element.offsetWidth > 0 && element.offsetHeight > 0;
 }
 
 function detectBannerByKeywords() {
@@ -36,6 +36,7 @@ function detectBannerByKeywords() {
     'div[class*="consent" i], div[id*="consent" i], ' +
     'div[class*="banner" i], div[id*="banner" i], ' +
     'div[class*="notice" i], div[id*="notice" i], ' +
+    'div[class*="cmp" i], div[id*="cmp" i], ' +
     'aside, dialog, section, footer'
   );
 
@@ -111,7 +112,7 @@ async function detectBannerViaCustomSelectors() {
 
     try {
       const container = document.querySelector(selector);
-      if (!container || !isVisible(container)) continue;
+      if (!container || !isVisible(container, false)) continue;
 
       return {
         container,

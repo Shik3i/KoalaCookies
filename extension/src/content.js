@@ -29,7 +29,7 @@ async function processPage() {
     return;
   }
 
-  if (!bannerResult.container || !isVisible(bannerResult.container)) {
+  if (!bannerResult.container || !isVisible(bannerResult.container, false)) {
     processed = false;
     return;
   }
