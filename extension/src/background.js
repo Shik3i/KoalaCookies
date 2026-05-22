@@ -150,33 +150,6 @@ const Service = {
     } catch (e) {}
   },
 
-  async enableDomain(domain) {
-    const whitelist = await Storage.get('whitelist');
-    const wlIdx = whitelist.indexOf(domain);
-    if (wlIdx !== -1) {
-      whitelist.splice(wlIdx, 1);
-      await Storage.set('whitelist', whitelist);
-    }
-
-    const disabledUntil = await Storage.get('disabledUntil');
-    if (disabledUntil[domain]) {
-      delete disabledUntil[domain];
-      await Storage.set('disabledUntil', disabledUntil);
-    }
-
-    try {
-      var tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-      for (var i = 0; i < tabs.length; i++) {
-        try {
-          var url = new URL(tabs[i].url);
-          if (url.hostname === domain) {
-            _clearTabState(tabs[i].id);
-          }
-        } catch (e) {}
-      }
-    } catch (e) {}
-  },
-
   async resetStats() {
     await Storage.set('stats', {
       totalDetected: 0,
