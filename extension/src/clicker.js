@@ -183,8 +183,7 @@ async function clickSettingsAndRejectAll(bannerResult) {
   let toggledCount = 0;
 
   const checkboxes = document.querySelectorAll(
-    'input[type="checkbox"]:checked:not([disabled]), ' +
-    'input[type="checkbox"][checked]:not([disabled])'
+    'input[type="checkbox"]:checked:not([disabled])'
   );
 
   for (const cb of checkboxes) {
@@ -257,7 +256,6 @@ function hideBanner(bannerResult) {
     }
   }
 
-  container.style.setProperty('display', 'none', 'important');
   container.remove();
   return true;
 }

@@ -47,6 +47,13 @@ const Service = {
     });
   },
 
+  async getPopupData() {
+    const stats = await Storage.getStats();
+    const mode = await Storage.get('mode');
+    const whitelist = await Storage.get('whitelist');
+    return { stats, settings: { mode, whitelist } };
+  },
+
   async recordBannerResult(domain, action) {
     const update = { detected: true };
     if (action === 'rejected') {
@@ -66,6 +73,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       return Service.getStatsForPopup();
     }).then(stats => {
       sendResponse({ success: true, stats });
+    }).catch(e => {
+      sendResponse({ success: false, error: e.message });
+    });
+    return true;
+  }
+
+  if (message.type === 'getPopupData') {
+    Service.getPopupData().then(data => {
+      sendResponse({ success: true, ...data });
     }).catch(e => {
       sendResponse({ success: false, error: e.message });
     });
@@ -129,7 +145,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 chrome.runtime.onInstalled.addListener(async () => {
   const existing = await Storage.get('mode');
-  if (!existing || existing === undefined || existing === null) {
+  if (existing == null) {
     await Storage.set('mode', 'gentle');
   }
 

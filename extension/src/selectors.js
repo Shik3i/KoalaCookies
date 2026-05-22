@@ -145,7 +145,7 @@ function detectBannerByKeywords() {
 
   const fixedElements = document.querySelectorAll(
     'div[style*="position: fixed" i], div[style*="position:fixed" i], ' +
-    'div[style*="z-index:" i], div[style*="z-index:" i]'
+    'div[style*="z-index:" i]'
   );
 
   for (const el of fixedElements) {
@@ -196,6 +196,21 @@ function detectBanner() {
       selectors: null,
       method: 'keyword'
     };
+  }
+
+  const shadowRoots = findShadowRoots(document.documentElement);
+  for (const shadowRoot of shadowRoots) {
+    for (const [provider, selectors] of Object.entries(BANNER_SELECTORS)) {
+      const container = shadowRoot.querySelector(selectors.container);
+      if (container && isVisible(container)) {
+        return {
+          container: container,
+          provider: provider,
+          selectors: selectors,
+          method: 'shadow_selector'
+        };
+      }
+    }
   }
 
   return null;

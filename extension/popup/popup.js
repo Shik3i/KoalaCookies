@@ -14,8 +14,7 @@ async function init() {
     }
   }
 
-  await loadStats();
-  await loadSettings();
+  await loadPopupData();
 
   document.getElementById('modeSelect').addEventListener('change', onModeChange);
   document.getElementById('resetStatsBtn').addEventListener('click', onResetStats);
@@ -32,6 +31,18 @@ async function sendMessage(msg) {
     console.error('KoalaCookies: sendMessage failed', err);
     showToast('Connection error');
     return null;
+  }
+}
+
+async function loadPopupData() {
+  const popupData = await sendMessage({ type: 'getPopupData' });
+  if (popupData && popupData.success) {
+    const s = popupData.stats;
+    document.getElementById('statDetected').textContent = s.totalDetected || 0;
+    document.getElementById('statRejected').textContent = s.totalRejected || 0;
+    document.getElementById('statSkipped').textContent = s.totalSkipped || 0;
+    document.getElementById('statHidden').textContent = s.totalHidden || 0;
+    document.getElementById('modeSelect').value = popupData.settings.mode || 'gentle';
   }
 }
 
@@ -110,18 +121,16 @@ async function updateDomainStatus() {
   const statusEl = document.getElementById('domainStatus');
   if (!currentDomain) return;
 
-  const response = await sendMessage({ type: 'getStats' });
-  if (!response || !response.success) return;
-
-  const whitelistResponse = await sendMessage({ type: 'getSettings' });
-  const whitelist = whitelistResponse.settings.whitelist || [];
+  const popupData = await sendMessage({ type: 'getPopupData' });
+  if (!popupData || !popupData.success) return;
+  const whitelist = popupData.settings.whitelist || [];
 
   if (whitelist.includes(currentDomain)) {
     statusEl.className = 'domain-status status-disabled';
     statusEl.querySelector('.status-icon').textContent = '🚫';
     statusEl.querySelector('.status-text').textContent = 'Whitelisted - No action';
   } else {
-    const domainStats = response.stats.byDomain?.[currentDomain];
+    const domainStats = popupData.stats.byDomain?.[currentDomain];
     if (domainStats && domainStats.detected > 0) {
       if (domainStats.rejected > 0) {
         statusEl.className = 'domain-status status-success';

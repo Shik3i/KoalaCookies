@@ -23,15 +23,15 @@ cp -r "$EXTENSION_DIR" "$FIREFOX_BUILD_DIR"
 
 # Add browser_specific_settings for Firefox
 node -e "
-const manifest = require('$FIREFOX_BUILD_DIR/manifest.json');
+const manifest = require(process.argv[1]);
 manifest.browser_specific_settings = {
   gecko: {
     id: 'koalacookies@github.com',
     strict_min_version: '109.0'
   }
 };
-require('fs').writeFileSync('$FIREFOX_BUILD_DIR/manifest.json', JSON.stringify(manifest, null, 2));
-"
+require('fs').writeFileSync(process.argv[1], JSON.stringify(manifest, null, 2));
+" "$FIREFOX_BUILD_DIR/manifest.json"
 
 FIREFOX_ZIP="$RELEASE_DIR/koala_cookies_firefox_v${VERSION}.zip"
 (cd "$FIREFOX_BUILD_DIR" && zip -r "$FIREFOX_ZIP" . -x "*.DS_Store" "*/Thumbs.db")
@@ -46,10 +46,10 @@ cp -r "$EXTENSION_DIR" "$CHROME_BUILD_DIR"
 
 # Ensure no Firefox-specific keys in the manifest
 node -e "
-const manifest = require('$CHROME_BUILD_DIR/manifest.json');
+const manifest = require(process.argv[1]);
 delete manifest.browser_specific_settings;
-require('fs').writeFileSync('$CHROME_BUILD_DIR/manifest.json', JSON.stringify(manifest, null, 2));
-"
+require('fs').writeFileSync(process.argv[1], JSON.stringify(manifest, null, 2));
+" "$CHROME_BUILD_DIR/manifest.json"
 
 CHROME_ZIP="$RELEASE_DIR/koala_cookies_chrome_v${VERSION}.zip"
 (cd "$CHROME_BUILD_DIR" && zip -r "$CHROME_ZIP" . -x "*.DS_Store" "*/Thumbs.db")
