@@ -35,10 +35,8 @@
       "matches": ["<all_urls>"],
       "js": [
         "src/storage.js",
-        "src/detector.js",
         "src/selectors.js",
         "src/clicker.js",
-        "src/stats.js",
         "src/content.js"
       ],
       "run_at": "document_idle"

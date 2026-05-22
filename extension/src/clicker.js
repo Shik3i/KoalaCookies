@@ -132,7 +132,7 @@ function clickRejectAll(bannerResult) {
   return null;
 }
 
-function clickSettingsAndRejectAll(bannerResult) {
+async function clickSettingsAndRejectAll(bannerResult) {
   if (!bannerResult) return null;
 
   const container = bannerResult.container;
@@ -153,7 +153,7 @@ function clickSettingsAndRejectAll(bannerResult) {
   }
 
   if (!settingsBtn || !isVisible(settingsBtn)) {
-    settingsBtn = findButtonByText(container, settingsTexts.map(t => t));
+    settingsBtn = findButtonByText(container, settingsTexts);
   }
 
   if (!settingsBtn || !isVisible(settingsBtn)) {
@@ -171,62 +171,62 @@ function clickSettingsAndRejectAll(bannerResult) {
     }
   }
 
-  if (settingsBtn && isVisible(settingsBtn)) {
-    settingsBtn.click();
-
-    setTimeout(() => {
-      const checkboxes = document.querySelectorAll(
-        'input[type="checkbox"]:checked:not([disabled]), ' +
-        'input[type="checkbox"][checked]:not([disabled])'
-      );
-
-      const toggles = document.querySelectorAll(
-        '[role="switch"][aria-checked="true"], ' +
-        '[role="checkbox"][aria-checked="true"], ' +
-        '.toggle.on, .toggle.checked, .switch.on, .switch.checked'
-      );
-
-      const allowedCategories = ['necessary', 'essential', 'functional', 'notwendig', 'essentiell', 'funktional'];
-      let toggledCount = 0;
-
-      for (const cb of checkboxes) {
-        const parent = cb.closest('div, label, li, section');
-        const parentText = parent ? parent.textContent.toLowerCase() : '';
-        const isAllowed = allowedCategories.some(cat => parentText.includes(cat));
-
-        if (!isAllowed && !cb.disabled) {
-          cb.click();
-          toggledCount++;
-        }
-      }
-
-      for (const toggle of toggles) {
-        toggle.click();
-        toggledCount++;
-      }
-
-      if (bannerResult.selectors && bannerResult.selectors.saveSettings) {
-        const saveBtn = document.querySelector(bannerResult.selectors.saveSettings);
-        if (saveBtn && isVisible(saveBtn)) {
-          saveBtn.click();
-        }
-      } else {
-        const saveTexts = ['save', 'confirm', 'save & close', 'save and close', 'save and exit',
-                           'speichern', 'bestätigen', 'übernehmen', 'auswahl speichern',
-                           'confirm choices', 'confirm my choices', 'bestätigen und schließen'];
-        const saveBtn = findButtonByText(document, saveTexts.map(t => t));
-        if (saveBtn) {
-          saveBtn.click();
-        }
-      }
-
-      return { toggled: toggledCount };
-    }, 500);
-
-    return { method: 'settings_menu' };
+  if (!settingsBtn || !isVisible(settingsBtn)) {
+    return null;
   }
 
-  return null;
+  settingsBtn.click();
+
+  await new Promise(resolve => setTimeout(resolve, 600));
+
+  const allowedCategories = ['necessary', 'essential', 'functional', 'notwendig', 'essentiell', 'funktional'];
+  let toggledCount = 0;
+
+  const checkboxes = document.querySelectorAll(
+    'input[type="checkbox"]:checked:not([disabled]), ' +
+    'input[type="checkbox"][checked]:not([disabled])'
+  );
+
+  for (const cb of checkboxes) {
+    const parent = cb.closest('div, label, li, section');
+    const parentText = parent ? parent.textContent.toLowerCase() : '';
+    const isAllowed = allowedCategories.some(cat => parentText.includes(cat));
+
+    if (!isAllowed && !cb.disabled) {
+      cb.click();
+      toggledCount++;
+    }
+  }
+
+  const toggles = document.querySelectorAll(
+    '[role="switch"][aria-checked="true"], ' +
+    '[role="checkbox"][aria-checked="true"], ' +
+    '.toggle.on, .toggle.checked, .switch.on, .switch.checked'
+  );
+
+  for (const toggle of toggles) {
+    toggle.click();
+    toggledCount++;
+  }
+
+  let saveBtn = null;
+
+  if (bannerResult.selectors && bannerResult.selectors.saveSettings) {
+    saveBtn = document.querySelector(bannerResult.selectors.saveSettings);
+  }
+
+  if (!saveBtn || !isVisible(saveBtn)) {
+    const saveTexts = ['save', 'confirm', 'save & close', 'save and close', 'save and exit',
+                       'speichern', 'bestätigen', 'übernehmen', 'auswahl speichern',
+                       'confirm choices', 'confirm my choices', 'bestätigen und schließen'];
+    saveBtn = findButtonByText(document, saveTexts);
+  }
+
+  if (saveBtn && isVisible(saveBtn)) {
+    saveBtn.click();
+  }
+
+  return { method: 'settings_menu', toggled: toggledCount };
 }
 
 function hideBanner(bannerResult) {
@@ -262,27 +262,6 @@ function hideBanner(bannerResult) {
   return true;
 }
 
-function handleBanner(bannerResult, mode) {
-  if (!bannerResult) return { action: 'none', detail: 'No banner detected' };
-
-  const rejectResult = clickRejectAll(bannerResult);
-  if (rejectResult) {
-    return { action: 'rejected', detail: rejectResult };
-  }
-
-  const settingsResult = clickSettingsAndRejectAll(bannerResult);
-  if (settingsResult) {
-    return { action: 'settings_reject', detail: settingsResult };
-  }
-
-  if (mode === 'aggressive') {
-    hideBanner(bannerResult);
-    return { action: 'hidden', detail: 'Banner hidden (aggressive mode)' };
-  }
-
-  return { action: 'skipped', detail: 'No reject button found, banner left visible' };
-}
-
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { clickRejectAll, clickSettingsAndRejectAll, hideBanner, handleBanner, findButtonByText, REJECT_TEXTS_EN };
+  module.exports = { clickRejectAll, clickSettingsAndRejectAll, hideBanner, findButtonByText, REJECT_TEXTS_EN };
 }

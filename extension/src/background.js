@@ -1,3 +1,5 @@
+importScripts('storage.js');
+
 const Service = {
   async getStatsForPopup() {
     const stats = await Storage.getStats();
@@ -114,7 +116,7 @@ chrome.runtime.onInstalled.addListener(async () => {
   }
 
   const existingStats = await Storage.get('stats');
-  if (!existingStats || !existingStats.totalDetected === undefined) {
+  if (!existingStats || existingStats.totalDetected === undefined) {
     await Storage.set('stats', {
       totalDetected: 0,
       totalRejected: 0,
