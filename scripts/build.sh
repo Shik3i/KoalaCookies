@@ -25,6 +25,7 @@ cp -r "$EXTENSION_DIR" "$FIREFOX_BUILD_DIR"
 FIREFOX_ID="${FIREFOX_EXTENSION_ID:-koalacookies@github.com}"
 node -e "
 const manifest = require(process.argv[1]);
+manifest.version = process.argv[3];
 manifest.browser_specific_settings = {
   gecko: {
     id: process.argv[2],
@@ -32,7 +33,7 @@ manifest.browser_specific_settings = {
   }
 };
 require('fs').writeFileSync(process.argv[1], JSON.stringify(manifest, null, 2));
-" "$FIREFOX_BUILD_DIR/manifest.json" "$FIREFOX_ID"
+" "$FIREFOX_BUILD_DIR/manifest.json" "$FIREFOX_ID" "$VERSION"
 
 # Inject version into popup.html
 node -e "
@@ -57,9 +58,10 @@ cp -r "$EXTENSION_DIR" "$CHROME_BUILD_DIR"
 # Ensure no Firefox-specific keys in the manifest
 node -e "
 const manifest = require(process.argv[1]);
+manifest.version = process.argv[2];
 delete manifest.browser_specific_settings;
 require('fs').writeFileSync(process.argv[1], JSON.stringify(manifest, null, 2));
-" "$CHROME_BUILD_DIR/manifest.json"
+" "$CHROME_BUILD_DIR/manifest.json" "$VERSION"
 
 # Inject version into popup.html
 node -e "
