@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="extension/icons/icon128.png" alt="KoalaCookies" width="96" height="96">
-</p>
-
 <h1 align="center">🐨 KoalaCookies</h1>
 
 <p align="center">
