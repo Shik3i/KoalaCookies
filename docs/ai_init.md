@@ -47,10 +47,12 @@ KoalaCookies ist eine datenschutzfreundliche, quelloffene Browser-Erweiterung f�
 ```
 extension/
 ├── manifest.json          # Extension Manifest (MV3)
+├── rules.json             # Wartbare Banner-Regel-Datenbank (NEU)
 ├── src/
 │   ├── background.js      # Service Worker
 │   ├── content.js         # Content Script (Orchestration)
 │   ├── storage.js         # Storage-Abstraktion + Statistiken
+│   ├── rules.js           # Regel-Lader + Engine (NEU)
 │   ├── selectorMeta.js    # Selektordatenbank + Anbieter-Metadaten
 │   ├── selectors.js       # Banner-Erkennung (Custom + Built-in + Keywords + Shadow DOM)
 │   ├── clicker.js         # Button-Findung + Klicklogik
@@ -146,6 +148,175 @@ extension/
 - [x] startPicker prüft auf restricted schemes (chrome://, edge://, etc.)
 - [x] Unsicheres button:last-child aus hideBanner-Selector entfernt
 
+### v1.1.0 - Wartbare Regel-Datenbank (nächster Meilenstein)
+- [ ] **`rules.json`** als zentrale, von Menschen lesbare Regeldatei im Repo (`extension/rules.json`)
+- [ ] Migriere bestehende BANNER_SELECTORS aus `selectorMeta.js` in `rules.json`
+- [ ] Definiere ein klares JSON-Schema für Contributor: `{provider, container, rejectAll, settings, saveSettings, acceptAll, close, urlPattern}`
+- [ ] **`src/rules.js`**: Neues Modul, das `rules.json` lädt und die Daten für `selectors.js` bereitstellt
+- [ ] `selectors.js` nutzt die neue Regel-Quelle (statt hartem `selectorMeta.js`)
+- [ ] Contributor-Doku in `CONTRIBUTING.md`: Wie man neue Provider in `rules.json` einträgt
+- [ ] Build-Skript validiert `rules.json` gegen das Schema (JSON Schema validation)
+
+**Wichtig: Keine Remote-Requests.** Die Extension liest `rules.json` aus dem eigenen Bundle (Content Script Injection). Neue Regeln erreichen Nutzer ausschließlich über Firefox-/Chrome-Web-Store-Updates. Das Repository ist die Single Source of Truth.
+
+### v1.2.0 - Iframe-Support
+- [ ] Content Script läuft in allen Frames (`"all_frames": true` in manifest.json)
+- [ ] `"match_about_blank": true` für dynamisch erzeugte iframes
+- [ ] `content.js`: Top-Frame kommuniziert mit Child-Frames via `chrome.runtime.sendMessage` + `frameId`
+- [ ] Banner-Erkennung in iframes: Ergebnis wird an Top-Frame gemeldet
+- [ ] Aktion (z. B. Klick) kann im iframe ausgeführt werden
+- [ ] Kein Cross-Origin-Leak: Nur Kommunikation innerhalb der eigenen Extension-Frames
+
+**Warum wichtig:** Viele Consent-Management-Plattformen (CMPs) laden ihre Banner in iframes (z. B. Sourcepoint, Funding Choices). Ohne Iframe-Support werden diese Banner komplett ignoriert.
+
+### v1.3.0 - Verbessertes Klick-Timing
+- [ ] **DOM-Stillness-Detection**: Statt festem 500ms-Timeout auf DOM-Ruhe warten (MutationObserver-basiert)
+- [ ] Timeout pro Strategie konfigurierbar (nicht global fest)
+- [ ] Event-Warten: Auf spezifische DOM-Events warten, bevor Button-Suche startet (z. B. wenn CMP sein Modal per JS nachlädt)
+- [ ] Retry-Logik: Wenn erster Klickversuch fehlschlägt, erneut scannen nach X ms
+
+**Begründung:** Viele Banner laden verzögert oder werden erst nach User-Interaktion sichtbar. Ein adaptives Timing-System erhöht die Trefferquote.
+
+### v1.4.0 - URL-basierte Regel-Filterung
+- [ ] `rules.json`: Jede Regel erhält optionales `urlPattern` (Array von Regex/Strings)
+- [ ] `selectors.js` prüft vor Selektor-Matching, ob die aktuelle URL zur Regel passt
+- [ ] Performance-Gewinn: Keine unnötigen DOM-Queries auf Seiten ohne relevante Banner
+- [ ] Ermöglicht spezifische Regeln für einzelne Domains (z. B. `["^https://www\\.example\\.com/"]`)
+
+### v1.5.0 - Mehrstufige Disable-Funktion
+- [ ] Popup: Dropdown "Disable on this site" mit Optionen:
+  - "For 30 minutes" (Session-basiert, in `chrome.storage.session`)
+  - "Until tomorrow" (Date-basiert, in `chrome.storage.local` mit Ablaufdatum)
+  - "Permanently" (Whitelist, heutiges Verhalten)
+- [ ] `content.js`: Prüft alle drei Disable-Stufen vor `processPage()`
+- [ ] Automatisches Re-Enable nach Ablauf der temporären Disable-Frist
+
+### v1.6.0 - Tab-Status-System
+- [ ] `background.js`: State-Map pro Tab (`pending`, `scanning`, `matched`, `rejected`, `hidden`, `skipped`, `disabled`, `error`)
+- [ ] Content Script meldet Zustandsänderungen an Background
+- [ ] Popup zeigt aktuellen Tab-Status als Icon + Text (statt nur "Checking...")
+- [ ] Icon-Badge im Toolbar-Icon: Farbiger Punkt (grün = rejected, orange = skipped, grau = kein Banner)
+- [ ] `chrome.action.setBadgeText()` / `setBadgeBackgroundColor()` für schnellen Status-Check
+
+### v1.7.0 - Seiten-Indikator (Mini-Overlay)
+- [ ] Optionaler, dezentraler Indikator auf der Webseite selbst (kein Popup nötig)
+- [ ] Kleiner Koala-Icon (16x16) in der unteren rechten Ecke, erscheint für 3 Sekunden nach Aktion
+- [ ] Farbcodiert: Grün = rejected, Orange = skipped, Rot = error, Blau = disabled/whitelisted
+- [ ] Per Options-Seite deaktivierbar (default: an)
+- [ ] Kein DOM-Pollution: Icon wird per `position: fixed` mit hohem `z-index` eingeblendet und via `fadeOut` entfernt
+
+### v1.8.0 - Fehler-Report Mechanismus
+- [ ] Popup Dev-Tab: "Report Issue" Button
+- [ ] Öffnet GitHub Issue Template mit vorausgefüllten Feldern:
+  - Domain
+  - Provider (falls erkannt)
+  - Detection-Methode
+  - Browser + Version
+  - Extension-Version
+- [ ] Kein automatisches Senden — Nutzer wird auf GitHub Issues geleitet, kann manuell absenden
+- [ ] Keine automatische Datenübermittlung, kein Telemetrie-Endpunkt
+
+### v1.9.0 - Observer-Optimierung
+- [ ] MutationObserver-Pooling: Wiederverwendung von Observern mit gleicher Konfiguration
+- [ ] Reduziert CPU-Last auf Seiten mit vielen DOM-Mutationen (Social Media, SPAs)
+- [ ] `processPage()` cached Ergebnisse für statische Seiten (kein Re-Scan ohne DOM-Änderung)
+- [ ] Benchmark: Vorher/Nachher-Vergleich der CPU-Zeit pro Seitenaufruf
+
+### v2.0.0 - Bessere Text-Erkennung für Ablehn-Buttons
+- [ ] Erweiterte Keyword-Liste in `rules.json` (Sprachen: en, de, fr, es, it, nl, pl, sv)
+- [ ] Button-Ranking verbessern: Priorisiere Buttons mit hohem Kontrast zum Akzeptieren-Button
+- [ ] Accessibility-First: ARIA-Rollen, Labels und Descriptions auswerten
+- [ ] Bild-Buttons erkennen: `alt`-Text und `aria-label` von `<img>`-basierten Buttons
+
+## Wichtige Architekturentscheidung: Regel-Datenbank
+
+### Problem
+Die aktuelle `selectorMeta.js` ist eine hartkodierte JS-Datei mit 12 Providern. Neue Provider hinzuzufügen erfordert JavaScript-Kenntnisse und das Editieren von Sourcecode. Das schreckt Contributor ab und ist fehleranfällig.
+
+### Lösung: `rules.json`
+
+Eine zentrale JSON-Datei im Repository, die alle Banner-Regeln enthält. Contributor (auch ohne JS-Kenntnisse) können neue Provider per Pull Request hinzufügen.
+
+**Datei:** `extension/rules.json`
+
+```json
+{
+  "version": "1.1.0",
+  "providers": [
+    {
+      "id": "onetrust",
+      "name": "OneTrust",
+      "url": "https://www.onetrust.com",
+      "selectors": {
+        "container": "#onetrust-banner-sdk",
+        "rejectAll": "#onetrust-reject-all-handler, .ot-sdk-row button[aria-label*=\"reject\" i]",
+        "settings": "#onetrust-pc-btn-handler",
+        "saveSettings": ".save-preference-btn-handler",
+        "acceptAll": "#onetrust-accept-btn-handler"
+      }
+    },
+    {
+      "id": "custom-site",
+      "name": "Example Site Banner",
+      "url": null,
+      "urlPattern": ["^https://(www\\.)?example\\.com/"],
+      "selectors": {
+        "container": "#cookie-layer",
+        "rejectAll": ".btn-reject",
+        "close": ".cookie-close"
+      }
+    }
+  ],
+  "globalKeywords": {
+    "reject": [
+      "reject all", "reject all cookies", "reject", "decline", "decline all",
+      "deny", "deny all", "refuse", "refuse all", "only necessary",
+      "alles ablehnen", "alle ablehnen", "ablehnen", "nur notwendige",
+      "verweigern", "alle verweigern"
+    ],
+    "settings": [
+      "settings", "options", "more", "customize", "configure",
+      "einstellungen", "optionen", "mehr", "konfigurieren",
+      "manage", "manage cookies", "cookie settings", "cookie preferences"
+    ],
+    "save": [
+      "save", "confirm", "save & close", "save and exit",
+      "speichern", "bestätigen", "übernehmen", "auswahl speichern"
+    ],
+    "allowedCategories": [
+      "necessary", "essential", "functional",
+      "notwendig", "essentiell", "funktional"
+    ]
+  }
+}
+```
+
+**Schema-Regeln:**
+- `id`: Eindeutiger Slug (lowercase, no spaces)
+- `name`: Anzeigename
+- `url`: Provider-Website oder `null`
+- `urlPattern` (optional): Array von Regex-Strings für URL-Filterung. Wenn gesetzt, wird die Regel nur auf passenden Domains ausgeführt.
+- `selectors`:
+  - `container` (Pflicht): CSS-Selektor für den Banner-Container
+  - `rejectAll` (optional): Selektor für den "Alle ablehnen"-Button
+  - `settings` (optional): Selektor für den "Einstellungen"-Button
+  - `saveSettings` (optional): Selektor für den "Speichern"-Button im Einstellungs-Menü
+  - `acceptAll` (optional): Selektor für den "Alle akzeptieren"-Button (nur für Negativ-Erkennung)
+  - `close` (optional): Selektor für Schließen/X-Button
+
+### Wie es geladen wird
+
+1. `rules.json` wird als Content Script injiziert (in `manifest.json` unter `"js"` eintragen, oder via `fetch` aus dem Extension-Bundle)
+2. `src/rules.js` parst die JSON-Daten und stellt sie als `window.BANNER_RULES` zur Verfügung
+3. `selectors.js` und `clicker.js` nutzen `BANNER_RULES` statt der alten `BANNER_SELECTORS`/`REJECT_TEXTS`-Konstanten
+4. Die `globalKeywords` ersetzen die hartkodierten Arrays in `clicker.js`
+
+**Warum kein Remote-Fetching:**
+- Verstoß gegen Privacy-First-Prinzip: Keine externen Requests zur Laufzeit
+- Sicherheitsrisiko: Kompromittierte Regel-Server könnten bösartige Selektoren einschleusen
+- DSGVO: Jeder externe Request ist potenziell datenschutzrelevant
+- Store-Updates sind der etablierte, sichere Weg für Content-Updates
+
 ## Technische Entscheidungen
 
 | Entscheidung | Begründung |
@@ -155,6 +326,8 @@ extension/
 | **CSS-Selektor-DB statt ML** | Transparent, debuggable, keine externen Abhängigkeiten |
 | **Storage.local (nicht sync)** | Keine Datenübertragung an Browser-Sync-Server |
 | **Keine externen CDNs** | Alle Assets lokal gebündelt, Privacy-First |
+| **Keine Remote-Regel-Updates** | Sicherheitsrisiko, DSGVO-Problem. Regeln via Store-Update. |
+| **rules.json statt JS-Module** | Contributor-freundlich, kein JS nötig für neue Provider |
 | **MIT-Lizenz** | Maximale Freiheit für Nutzer und Beitragende |
 
 ## Datenschutz-Prinzipien
@@ -163,7 +336,8 @@ extension/
 2. **Keine Telemetrie, kein Tracking, keine Analytics**
 3. **Minimale Berechtigungen** - Nur was für die Funktion nötig ist
 4. **Transparenz** - Vollständig quelloffen, jeder kann den Code prüfen
-5. **Keine externen Requests** - Kein Contact zum Entwickler, keinen Dritt-Servern
+5. **Keine externen Requests** - Kein Kontakt zum Entwickler, keinen Dritt-Servern
+6. **Keine Remote-Code-Ausführung** - Keine fremden Skripte, kein `eval()`, kein dynamisches Regel-Laden
 
 ## Entwicklungskonventionen
 
@@ -174,3 +348,5 @@ extension/
 - Testing: Jest für Unit-Tests, Playwright/Puppeteer für E2E (später)
 - Linting: ESLint mit `eslint:recommended`
 - Formatierung: Prettier
+- **Kein Code aus Fremdprojekten kopieren** - Inspiration ja, Kopie nein
+- **Keine Referenzen auf Fremdprojekte** - Weder in Code-Kommentaren noch in Dokumentation

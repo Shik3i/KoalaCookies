@@ -1,17 +1,21 @@
 function detectBannerViaSelectors() {
-  for (const [provider, selectors] of Object.entries(BANNER_SELECTORS)) {
-    const container = document.querySelector(selectors.container);
+  var providers = RulesEngine.getProviders();
+  for (var i = 0; i < providers.length; i++) {
+    var provider = providers[i];
+    if (!provider.selectors || !provider.selectors.container) continue;
+    var container = document.querySelector(provider.selectors.container);
     if (container && isVisible(container, false)) {
-      return { provider, container, selectors };
+      return { provider: provider.id, container: container, selectors: provider.selectors };
     }
   }
   return null;
 }
 
-function isVisible(element, requireDimensions = true) {
+function isVisible(element, requireDimensions) {
+  if (requireDimensions === undefined) requireDimensions = true;
   if (!element) return false;
-  const style = getComputedStyle(element);
-  const visible = style.display !== 'none' &&
+  var style = getComputedStyle(element);
+  var visible = style.display !== 'none' &&
          style.visibility !== 'hidden' &&
          style.opacity !== '0';
   if (!requireDimensions) return visible;
@@ -19,19 +23,11 @@ function isVisible(element, requireDimensions = true) {
 }
 
 function detectBannerByKeywords() {
-  const keywords = [
-    'cookie', 'cookies',
-    'consent', 'zustimmung',
-    'datenschutz', 'privacy',
-    'dsgvo', 'gdpr',
-    'tracking', 'verfolgung',
-    'personal data', 'personenbezogene',
-    'cookie policy', 'cookie-richtlinie'
-  ];
+  var keywords = RulesEngine.getDetectionKeywords();
 
-  const lowerKeywords = keywords.map(k => k.toLowerCase());
+  var lowerKeywords = keywords.map(function(k) { return k.toLowerCase(); });
 
-  const candidateTags = document.querySelectorAll(
+  var candidateTags = document.querySelectorAll(
     'div[class*="cookie" i], div[id*="cookie" i], ' +
     'div[class*="consent" i], div[id*="consent" i], ' +
     'div[class*="banner" i], div[id*="banner" i], ' +
@@ -40,15 +36,19 @@ function detectBannerByKeywords() {
     'aside, dialog, section, footer'
   );
 
-  for (const el of candidateTags) {
+  for (var i = 0; i < candidateTags.length; i++) {
+    var el = candidateTags[i];
     if (!isVisible(el)) continue;
 
-    const text = (el.textContent || '').toLowerCase();
-    const matchCount = lowerKeywords.filter(k => text.includes(k)).length;
+    var text = (el.textContent || '').toLowerCase();
+    var matchCount = 0;
+    for (var k = 0; k < lowerKeywords.length; k++) {
+      if (text.indexOf(lowerKeywords[k]) !== -1) matchCount++;
+    }
 
     if (matchCount >= 2) {
-      const rect = el.getBoundingClientRect();
-      const viewportRatio = (rect.width * rect.height) / (window.innerWidth * window.innerHeight);
+      var rect = el.getBoundingClientRect();
+      var viewportRatio = (rect.width * rect.height) / (window.innerWidth * window.innerHeight);
 
       if (viewportRatio < 0.6) {
         return el;
@@ -56,18 +56,22 @@ function detectBannerByKeywords() {
     }
   }
 
-  const fixedElements = document.querySelectorAll(
+  var fixedElements = document.querySelectorAll(
     'div[style*="position: fixed" i], div[style*="position:fixed" i], ' +
     'div[style*="z-index:" i]'
   );
 
-  for (const el of fixedElements) {
-    if (!isVisible(el)) continue;
-    const text = (el.textContent || '').toLowerCase();
-    const matchCount = lowerKeywords.filter(k => text.includes(k)).length;
+  for (var j = 0; j < fixedElements.length; j++) {
+    var fel = fixedElements[j];
+    if (!isVisible(fel)) continue;
+    var ftext = (fel.textContent || '').toLowerCase();
+    var fmatchCount = 0;
+    for (var k2 = 0; k2 < lowerKeywords.length; k2++) {
+      if (ftext.indexOf(lowerKeywords[k2]) !== -1) fmatchCount++;
+    }
 
-    if (matchCount >= 2) {
-      return el;
+    if (fmatchCount >= 2) {
+      return fel;
     }
   }
 
@@ -75,61 +79,65 @@ function detectBannerByKeywords() {
 }
 
 function findShadowRoots(root) {
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT, {
+  var walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT, {
     acceptNode: function(node) {
       return node.shadowRoot ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP;
     }
   });
 
-  const roots = [];
-  let node;
+  var roots = [];
+  var node;
   while ((node = walker.nextNode())) {
     roots.push(node.shadowRoot);
-    roots.push(...findShadowRoots(node.shadowRoot));
+    var nested = findShadowRoots(node.shadowRoot);
+    for (var i = 0; i < nested.length; i++) roots.push(nested[i]);
   }
   return roots;
 }
 
 async function getCustomSelectors() {
-  const data = await Storage.get('customSelectors');
+  var data = await Storage.get('customSelectors');
   return data || [];
 }
 
 async function detectBannerViaCustomSelectors() {
-  const customs = await getCustomSelectors();
+  var customs = await getCustomSelectors();
   if (!customs.length) return null;
 
-  for (const cs of customs) {
-    const p = cs.profile;
+  for (var i = 0; i < customs.length; i++) {
+    var cs = customs[i];
+    var p = cs.profile;
 
-    let selector = p.tagName;
+    var selector = p.tagName;
     if (p.id) {
       selector += '#' + CSS.escape(p.id);
     } else if (p.className) {
-      const firstClass = p.className.split(' ')[0];
+      var firstClass = p.className.split(' ')[0];
       if (firstClass && firstClass.length > 1) selector += '.' + CSS.escape(firstClass);
     }
 
     try {
-      const container = document.querySelector(selector);
+      var container = document.querySelector(selector);
       if (!container || !isVisible(container, false)) continue;
 
       return {
-        container,
+        container: container,
         provider: 'custom',
         selectors: { container: selector, rejectAll: null, settings: null, saveSettings: null, acceptAll: null },
         method: 'custom_selector'
       };
-    } catch { continue; }
+    } catch (e) { continue; }
   }
   return null;
 }
 
 async function detectBanner() {
-  const customResult = await detectBannerViaCustomSelectors();
+  var customResult = await detectBannerViaCustomSelectors();
   if (customResult) return customResult;
 
-  const selectorResult = detectBannerViaSelectors();
+  await RulesEngine.ready();
+
+  var selectorResult = detectBannerViaSelectors();
   if (selectorResult) {
     return {
       container: selectorResult.container,
@@ -139,7 +147,7 @@ async function detectBanner() {
     };
   }
 
-  const keywordResult = detectBannerByKeywords();
+  var keywordResult = detectBannerByKeywords();
   if (keywordResult) {
     return {
       container: keywordResult,
@@ -149,18 +157,24 @@ async function detectBanner() {
     };
   }
 
-  const shadowRoots = findShadowRoots(document.documentElement);
-  for (const shadowRoot of shadowRoots) {
-    for (const [provider, selectors] of Object.entries(BANNER_SELECTORS)) {
-      const container = shadowRoot.querySelector(selectors.container);
-      if (container && isVisible(container)) {
-        return {
-          container: container,
-          provider: provider,
-          selectors: selectors,
-          method: 'shadow_selector'
-        };
-      }
+  var providers = RulesEngine.getProviders();
+  var shadowRoots = findShadowRoots(document.documentElement);
+  for (var s = 0; s < shadowRoots.length; s++) {
+    var shadowRoot = shadowRoots[s];
+    for (var p = 0; p < providers.length; p++) {
+      var provider = providers[p];
+      if (!provider.selectors || !provider.selectors.container) continue;
+      try {
+        var shadowContainer = shadowRoot.querySelector(provider.selectors.container);
+        if (shadowContainer && isVisible(shadowContainer)) {
+          return {
+            container: shadowContainer,
+            provider: provider.id,
+            selectors: provider.selectors,
+            method: 'shadow_selector'
+          };
+        }
+      } catch (e) { continue; }
     }
   }
 

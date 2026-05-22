@@ -37,7 +37,7 @@
       "matches": ["*://*/*"],
       "js": [
         "src/storage.js",
-        "src/selectorMeta.js",
+        "src/rulesEngine.js",
         "src/selectors.js",
         "src/clicker.js",
         "src/content.js"

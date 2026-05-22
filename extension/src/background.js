@@ -1,5 +1,5 @@
 try {
-  importScripts('selectorMeta.js', 'storage.js');
+  importScripts('rulesEngine.js', 'selectorMeta.js', 'storage.js');
 } catch (e) {
   console.error('KoalaCookies: Failed to load modules', e);
 }
@@ -97,19 +97,24 @@ const Service = {
     return await Storage.getBannerInfo(domain);
   },
 
-  getSelectorList() {
-    return Object.entries(BANNER_SELECTORS).map(([key, sel]) => ({
-      id: key,
-      name: BANNER_META[key] ? BANNER_META[key].name : key,
-      url: BANNER_META[key] ? BANNER_META[key].url : null,
-      selectors: {
-        container: sel.container || null,
-        rejectAll: sel.rejectAll || null,
-        settings: sel.settings || null,
-        saveSettings: sel.saveSettings || null,
-        acceptAll: sel.acceptAll || null
-      }
-    }));
+  async getSelectorList() {
+    await RulesEngine.ready();
+    var providers = RulesEngine.getProviders();
+    return providers.map(function(p) {
+      var sel = p.selectors || {};
+      return {
+        id: p.id,
+        name: p.name,
+        url: p.url || null,
+        selectors: {
+          container: sel.container || null,
+          rejectAll: sel.rejectAll || null,
+          settings: sel.settings || null,
+          saveSettings: sel.saveSettings || null,
+          acceptAll: sel.acceptAll || null
+        }
+      };
+    });
   },
 
   async startPicker() {
@@ -254,11 +259,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 
   if (message.type === 'getSelectorList') {
-    try {
-      sendResponse({ success: true, providers: Service.getSelectorList() });
-    } catch (e) {
+    Service.getSelectorList().then(function(providers) {
+      sendResponse({ success: true, providers: providers });
+    }).catch(function(e) {
       sendResponse({ success: false, error: e.message });
-    }
+    });
     return true;
   }
 
