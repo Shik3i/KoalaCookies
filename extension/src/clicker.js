@@ -131,7 +131,7 @@ async function clickSettingsAndRejectAll(bannerResult) {
 
   settingsBtn.click();
 
-  await new Promise(function(resolve) { setTimeout(resolve, 600); });
+  await _waitForSettingsPanel(scope, 5000);
 
   var toggledCount = 0;
 
@@ -194,7 +194,27 @@ async function clickSettingsAndRejectAll(bannerResult) {
   return { method: 'settings_menu', toggled: toggledCount };
 }
 
-function hideBanner(bannerResult) {
+function _waitForSettingsPanel(scope, timeoutMs) {
+  if (!timeoutMs) timeoutMs = 5000;
+  var start = Date.now();
+  return new Promise(function(resolve) {
+    function check() {
+      var toggles = scope.querySelectorAll(
+        'input[type="checkbox"], [role="switch"], [role="checkbox"]'
+      );
+      if (toggles.length > 0) {
+        resolve();
+        return;
+      }
+      if (Date.now() - start > timeoutMs) {
+        resolve();
+        return;
+      }
+      setTimeout(check, 150);
+    }
+    check();
+  });
+}
   if (!bannerResult || !bannerResult.container) return false;
 
   var container = bannerResult.container;

@@ -1,7 +1,20 @@
-let bannerObserver = null;
-let processed = false;
-let debounceTimer = null;
-let lastUrl = location.href;
+var TIMING = {
+  DEBOUNCE_MS: 300,
+  INITIAL_SCAN_DELAY: 500,
+  OBSERVER_SETUP_DELAY: 600,
+  DOM_LOADED_SCAN_DELAY: 800,
+  DOM_LOADED_OBSERVER_DELAY: 1000,
+  SPA_NAV_DELAY: 300,
+  IFRAME_LOAD_DELAY: 300,
+  IFRAME_OBSERVER_DELAY: 400,
+  REJECT_RETRY_DELAY: 500,
+  SETTINGS_PANEL_TIMEOUT: 5000
+};
+
+var bannerObserver = null;
+var processed = false;
+var debounceTimer = null;
+var lastUrl = location.href;
 
 function isValidPage() {
   const protocol = window.location.protocol;
@@ -36,18 +49,23 @@ async function processPage() {
 
   let result;
 
-  const rejectResult = clickRejectAll(bannerResult);
+  var rejectResult = clickRejectAll(bannerResult);
   if (rejectResult) {
     result = { action: 'rejected', detail: rejectResult };
   } else {
-    const settingsResult = await clickSettingsAndRejectAll(bannerResult);
-    if (settingsResult) {
-      result = { action: 'rejected', detail: settingsResult };
-    } else if (mode === 'aggressive') {
-      hideBanner(bannerResult);
-      result = { action: 'hidden', detail: 'Banner hidden (aggressive mode)' };
+    var retryResult = await _retryReject(bannerResult);
+    if (retryResult) {
+      result = { action: 'rejected', detail: retryResult };
     } else {
-      result = { action: 'skipped', detail: 'No reject button found, banner left visible' };
+      var settingsResult = await clickSettingsAndRejectAll(bannerResult);
+      if (settingsResult) {
+        result = { action: 'rejected', detail: settingsResult };
+      } else if (mode === 'aggressive') {
+        hideBanner(bannerResult);
+        result = { action: 'hidden', detail: 'Banner hidden (aggressive mode)' };
+      } else {
+        result = { action: 'skipped', detail: 'No reject button found, banner left visible' };
+      }
     }
   }
 
@@ -72,6 +90,13 @@ function getContainerInfo(container) {
   return tag + id + classes;
 }
 
+async function _retryReject(bannerResult) {
+  await new Promise(function(r) { setTimeout(r, TIMING.REJECT_RETRY_DELAY); });
+  var retry = clickRejectAll(bannerResult);
+  if (retry) return retry;
+  return null;
+}
+
 function setupObserver() {
   if (bannerObserver) {
     bannerObserver.disconnect();
@@ -86,7 +111,7 @@ function setupObserver() {
     if (debounceTimer) clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
       processPage().catch(console.error);
-    }, 500);
+    }, TIMING.DEBOUNCE_MS);
   });
 
   function doObserve() {
@@ -106,7 +131,7 @@ function start() {
   window.addEventListener('popstate', () => {
     processed = false;
     lastUrl = location.href;
-    setTimeout(processPage, 300);
+    setTimeout(processPage, TIMING.SPA_NAV_DELAY);
   });
 
   var isTopFrame = (window.self === window.top);
@@ -114,24 +139,24 @@ function start() {
   if (isTopFrame) {
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', () => {
-        setTimeout(processPage, 800);
-        setTimeout(setupObserver, 1000);
+        setTimeout(processPage, TIMING.DOM_LOADED_SCAN_DELAY);
+        setTimeout(setupObserver, TIMING.DOM_LOADED_OBSERVER_DELAY);
       });
     } else {
-      setTimeout(processPage, 500);
-      setTimeout(setupObserver, 600);
+      setTimeout(processPage, TIMING.INITIAL_SCAN_DELAY);
+      setTimeout(setupObserver, TIMING.OBSERVER_SETUP_DELAY);
     }
   } else {
     window.addEventListener('load', () => {
       processed = false;
       lastUrl = location.href;
-      setTimeout(processPage, 300);
-      setTimeout(setupObserver, 400);
+      setTimeout(processPage, TIMING.IFRAME_LOAD_DELAY);
+      setTimeout(setupObserver, TIMING.IFRAME_OBSERVER_DELAY);
     });
 
     if (document.readyState !== 'loading') {
-      setTimeout(processPage, 300);
-      setTimeout(setupObserver, 400);
+      setTimeout(processPage, TIMING.IFRAME_LOAD_DELAY);
+      setTimeout(setupObserver, TIMING.IFRAME_OBSERVER_DELAY);
     }
   }
 }
