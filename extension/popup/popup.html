@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KoalaCookies</title>
+  <link rel="stylesheet" href="../styles/global.css">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header class="popup-header">
+    <div class="logo">
+      <span class="logo-icon">🐨</span>
+      <h1>KoalaCookies</h1>
+    </div>
+    <span class="version">v0.1.0</span>
+  </header>
+
+  <main class="popup-main">
+    <section class="status-section">
+      <div class="current-domain">
+        <span class="label">Current Site</span>
+        <span id="currentDomain" class="value">Loading...</span>
+      </div>
+      <div id="domainStatus" class="domain-status status-neutral">
+        <span class="status-icon">⏳</span>
+        <span class="status-text">Checking...</span>
+      </div>
+    </section>
+
+    <section class="stats-section">
+      <h2>Statistics</h2>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span class="stat-value" id="statDetected">0</span>
+          <span class="stat-label">Detected</span>
+        </div>
+        <div class="stat-card stat-success">
+          <span class="stat-value" id="statRejected">0</span>
+          <span class="stat-label">Rejected</span>
+        </div>
+        <div class="stat-card stat-warning">
+          <span class="stat-value" id="statSkipped">0</span>
+          <span class="stat-label">Skipped</span>
+        </div>
+        <div class="stat-card stat-info">
+          <span class="stat-value" id="statHidden">0</span>
+          <span class="stat-label">Hidden</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="settings-section">
+      <h2>Settings</h2>
+      <div class="setting-row">
+        <div class="setting-info">
+          <span class="setting-label">Mode</span>
+          <span class="setting-desc">How to handle banners with no reject button</span>
+        </div>
+        <select id="modeSelect" class="mode-select">
+          <option value="gentle">Gentle (keep visible)</option>
+          <option value="aggressive">Aggressive (hide banner)</option>
+        </select>
+      </div>
+      <div class="setting-row">
+        <button id="whitelistBtn" class="btn btn-secondary">
+          <span id="whitelistAction">Add</span> to Whitelist
+        </button>
+        <button id="resetStatsBtn" class="btn btn-danger">Reset Stats</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="popup-footer">
+    <a href="https://github.com/Shik3i/KoalaCookies" target="_blank" rel="noopener noreferrer">
+      Open Source (MIT)
+    </a>
+    <span class="footer-separator">|</span>
+    <a href="https://github.com/Shik3i/KoalaCookies/blob/main/docs/privacy.md" target="_blank" rel="noopener noreferrer">
+      Privacy
+    </a>
+  </footer>
+
+  <script src="../src/storage.js"></script>
+  <script src="../src/stats.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
