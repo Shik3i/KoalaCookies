@@ -216,5 +216,49 @@
   "popupDevStatusNoBanner": {
     "message": "No banner detected on this page",
     "description": "Dev tab status when no banner was detected"
+  },
+  "popupDisableAdd": {
+    "message": "Disable on this site",
+    "description": "Button to open disable duration dropdown"
+  },
+  "popupDisable30min": {
+    "message": "For 30 minutes",
+    "description": "Disable for 30 minutes option"
+  },
+  "popupDisable1hr": {
+    "message": "For 1 hour",
+    "description": "Disable for 1 hour option"
+  },
+  "popupDisable24hr": {
+    "message": "For 24 hours",
+    "description": "Disable for 24 hours option"
+  },
+  "popupDisablePermanent": {
+    "message": "Permanently",
+    "description": "Disable permanently option"
+  },
+  "popupDisableStatusPermanent": {
+    "message": "Re-enable on this site",
+    "description": "Button text when the site is permanently disabled"
+  },
+  "popupDisableStatusTemporaryMin": {
+    "message": "Re-enable (disabled for $MINUTES$ min)",
+    "description": "Button text showing remaining minutes of temporary disable",
+    "placeholders": {
+      "minutes": {
+        "content": "$1",
+        "example": "25"
+      }
+    }
+  },
+  "popupDisableStatusTemporaryHr": {
+    "message": "Re-enable (disabled for $HOURS$ h)",
+    "description": "Button text showing remaining hours of temporary disable",
+    "placeholders": {
+      "hours": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
   }
 }

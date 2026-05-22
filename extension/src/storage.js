@@ -1,6 +1,7 @@
 const DEFAULTS = {
   mode: 'gentle',
   whitelist: [],
+  disabledUntil: {},
   stats: {
     totalDetected: 0,
     totalRejected: 0,
@@ -35,7 +36,9 @@ const Storage = {
   async getSettings() {
     const mode = await this.get('mode');
     const whitelist = await this.get('whitelist');
-    return { mode, whitelist };
+    const disabledUntil = await this.get('disabledUntil');
+    Storage._cleanExpiredDisables(disabledUntil);
+    return { mode, whitelist, disabledUntil };
   },
 
   async getStats() {
@@ -99,5 +102,21 @@ const Storage = {
     await this.set('stats', stats);
     }).catch(console.error);
     return this._lock;
+  },
+
+  _cleanExpiredDisables(disabledUntil) {
+    if (!disabledUntil) return;
+    var now = Date.now();
+    var changed = false;
+    var keys = Object.keys(disabledUntil);
+    for (var i = 0; i < keys.length; i++) {
+      if (disabledUntil[keys[i]] <= now) {
+        delete disabledUntil[keys[i]];
+        changed = true;
+      }
+    }
+    if (changed) {
+      this.set('disabledUntil', disabledUntil).catch(function(){});
+    }
   }
 };

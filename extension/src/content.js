@@ -28,10 +28,16 @@ async function processPage() {
 
   const settings = await Storage.getSettings();
   const whitelist = settings.whitelist || [];
+  const disabledUntil = settings.disabledUntil || {};
   const mode = settings.mode || 'gentle';
   const domain = window.location.hostname;
 
   if (whitelist.includes(domain)) {
+    return;
+  }
+
+  var until = disabledUntil[domain];
+  if (until && Date.now() < until) {
     return;
   }
 

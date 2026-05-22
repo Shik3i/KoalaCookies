@@ -35,17 +35,26 @@ async function init() {
 
   document.getElementById('modeSelect').addEventListener('change', onModeChange);
   document.getElementById('resetStatsBtn').addEventListener('click', onResetStats);
-  document.getElementById('whitelistBtn').addEventListener('click', onToggleWhitelist);
+  document.getElementById('whitelistBtn')?.addEventListener('click', onToggleWhitelist);
+  document.getElementById('enableDomainBtn').addEventListener('click', onEnableDomain);
+  document.getElementById('disableDropdownBtn').addEventListener('click', toggleDisableDropdown);
   document.getElementById('copyLogBtn').addEventListener('click', copyLogToClipboard);
   document.getElementById('startPickerBtn').addEventListener('click', startPicker);
+
+  document.querySelectorAll('.disable-option').forEach(function(opt) {
+    opt.addEventListener('click', function() {
+      var durationMs = parseInt(opt.dataset.duration, 10);
+      onDisableDomain(durationMs);
+    });
+  });
 
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => switchTab(btn.dataset.tab));
   });
 
-  document.getElementById('whitelistBtn').addEventListener('dblclick', toggleWhitelistList);
+  document.getElementById('enableDomainBtn').addEventListener('dblclick', toggleWhitelistList);
 
-  await updateWhitelistButton();
+  await updateDisableButton();
   await updateDomainStatus();
 
   translatePage();
@@ -330,9 +339,9 @@ async function toggleWhitelistList() {
 
       list.querySelectorAll('.wl-remove').forEach(function (btn) {
         btn.addEventListener('click', async function () {
-          await sendMessage({ type: 'removeFromWhitelist', domain: btn.dataset.domain });
+          await sendMessage({ type: 'enableDomain', domain: btn.dataset.domain });
           toggleWhitelistList();
-          updateWhitelistButton();
+          updateDisableButton();
         });
       });
     }
@@ -357,41 +366,65 @@ async function onResetStats() {
 }
 
 async function onToggleWhitelist() {
-  if (!currentDomain) return;
+  // kept for backward compatibility with double-click whitelist list
+}
 
-  const response = await sendMessage({ type: 'getSettings' });
-  if (!response || !response.success) return;
-
-  const whitelist = response.settings.whitelist || [];
-  const isWhitelisted = whitelist.includes(currentDomain);
-
-  if (isWhitelisted) {
-    await sendMessage({ type: 'removeFromWhitelist', domain: currentDomain });
-    showToast(chrome.i18n.getMessage('popupToastRemovedWhitelist'));
+function toggleDisableDropdown() {
+  var menu = document.getElementById('disableDropdownMenu');
+  if (menu.style.display === 'none' || !menu.style.display) {
+    menu.style.display = 'block';
   } else {
-    await sendMessage({ type: 'addToWhitelist', domain: currentDomain });
-    showToast(chrome.i18n.getMessage('popupToastAddedWhitelist'));
+    menu.style.display = 'none';
   }
+}
 
-  await updateWhitelistButton();
+async function onDisableDomain(durationMs) {
+  if (!currentDomain) return;
+  document.getElementById('disableDropdownMenu').style.display = 'none';
+  await sendMessage({ type: 'disableDomain', domain: currentDomain, durationMs: durationMs });
+  await updateDisableButton();
   await updateDomainStatus();
 }
 
-async function updateWhitelistButton() {
-  const response = await sendMessage({ type: 'getSettings' });
+async function onEnableDomain() {
+  if (!currentDomain) return;
+  await sendMessage({ type: 'enableDomain', domain: currentDomain });
+  await updateDisableButton();
+  await updateDomainStatus();
+}
+
+async function updateDisableButton() {
+  var response = await sendMessage({ type: 'getSettings' });
   if (!response || !response.success) return;
 
-  const whitelist = response.settings.whitelist || [];
-  const isWhitelisted = whitelist.includes(currentDomain);
-  const btn = document.getElementById('whitelistBtn');
-  const actionSpan = document.getElementById('whitelistAction');
+  var whitelist = response.settings.whitelist || [];
+  var disabledUntil = response.settings.disabledUntil || {};
+  var isPermanent = whitelist.includes(currentDomain);
+  var until = disabledUntil[currentDomain];
+  var isTemporary = until && Date.now() < until;
 
-  if (isWhitelisted) {
-    actionSpan.textContent = chrome.i18n.getMessage('popupWhitelistRemove');
-    btn.classList.add('btn-warning');
+  var enableBtn = document.getElementById('enableDomainBtn');
+  var dropdown = document.getElementById('disableDropdown');
+
+  if (isPermanent || isTemporary) {
+    dropdown.style.display = 'none';
+    enableBtn.style.display = 'inline-block';
+    var statusText;
+    if (isPermanent) {
+      statusText = chrome.i18n.getMessage('popupDisableStatusPermanent');
+    } else {
+      var remaining = Math.ceil((until - Date.now()) / 60000);
+      if (remaining > 60) {
+        remaining = Math.ceil(remaining / 60);
+        statusText = chrome.i18n.getMessage('popupDisableStatusTemporaryHr', [String(remaining)]);
+      } else {
+        statusText = chrome.i18n.getMessage('popupDisableStatusTemporaryMin', [String(remaining)]);
+      }
+    }
+    document.getElementById('disableStatus').textContent = statusText;
   } else {
-    actionSpan.textContent = chrome.i18n.getMessage('popupWhitelistAdd');
-    btn.classList.remove('btn-warning');
+    dropdown.style.display = 'block';
+    enableBtn.style.display = 'none';
   }
 }
 
@@ -402,8 +435,15 @@ async function updateDomainStatus() {
   const popupData = await sendMessage({ type: 'getPopupData' });
   if (!popupData || !popupData.success) return;
   const whitelist = popupData.settings.whitelist || [];
+  const disabledUntil = popupData.settings.disabledUntil || {};
 
-  if (whitelist.includes(currentDomain)) {
+  var isDisabled = whitelist.includes(currentDomain);
+  var until = disabledUntil[currentDomain];
+  if (!isDisabled && until && Date.now() < until) {
+    isDisabled = true;
+  }
+
+  if (isDisabled) {
     statusEl.className = 'domain-status status-disabled';
     statusEl.querySelector('.status-icon').textContent = '\uD83D\uDEAB';
     statusEl.querySelector('.status-text').textContent =

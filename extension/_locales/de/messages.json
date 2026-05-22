@@ -216,5 +216,49 @@
   "popupDevStatusNoBanner": {
     "message": "Kein Banner auf dieser Seite erkannt",
     "description": "Dev-Tab-Status wenn kein Banner erkannt wurde"
+  },
+  "popupDisableAdd": {
+    "message": "Auf dieser Seite deaktivieren",
+    "description": "Button um Deaktivierungs-Dropdown zu öffnen"
+  },
+  "popupDisable30min": {
+    "message": "Für 30 Minuten",
+    "description": "Option: Für 30 Minuten deaktivieren"
+  },
+  "popupDisable1hr": {
+    "message": "Für 1 Stunde",
+    "description": "Option: Für 1 Stunde deaktivieren"
+  },
+  "popupDisable24hr": {
+    "message": "Für 24 Stunden",
+    "description": "Option: Für 24 Stunden deaktivieren"
+  },
+  "popupDisablePermanent": {
+    "message": "Dauerhaft",
+    "description": "Option: Dauerhaft deaktivieren"
+  },
+  "popupDisableStatusPermanent": {
+    "message": "Wieder aktivieren",
+    "description": "Button-Text wenn die Seite dauerhaft deaktiviert ist"
+  },
+  "popupDisableStatusTemporaryMin": {
+    "message": "Wieder aktivieren (deaktiviert für $MINUTES$ min)",
+    "description": "Button-Text mit verbleibenden Minuten der temporären Deaktivierung",
+    "placeholders": {
+      "minutes": {
+        "content": "$1",
+        "example": "25"
+      }
+    }
+  },
+  "popupDisableStatusTemporaryHr": {
+    "message": "Wieder aktivieren (deaktiviert für $HOURS$ h)",
+    "description": "Button-Text mit verbleibenden Stunden der temporären Deaktivierung",
+    "placeholders": {
+      "hours": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
   }
 }

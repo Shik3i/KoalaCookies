@@ -70,9 +70,22 @@
           </select>
         </div>
         <div class="setting-row">
-          <button id="whitelistBtn" class="btn btn-secondary">
-            <span id="whitelistAction">Add to Whitelist</span>
-          </button>
+          <div class="disable-controls">
+            <button id="enableDomainBtn" class="btn btn-warning" style="display:none;">
+              <span id="disableStatus"></span>
+            </button>
+            <div id="disableDropdown" class="disable-dropdown">
+              <button id="disableDropdownBtn" class="btn btn-secondary">
+                <span data-i18n="popupDisableAdd">Disable on this site</span>
+              </button>
+              <div id="disableDropdownMenu" class="disable-dropdown-menu" style="display:none;">
+                <button class="disable-option" data-duration="1800000" data-i18n="popupDisable30min">For 30 minutes</button>
+                <button class="disable-option" data-duration="3600000" data-i18n="popupDisable1hr">For 1 hour</button>
+                <button class="disable-option" data-duration="86400000" data-i18n="popupDisable24hr">For 24 hours</button>
+                <button class="disable-option" data-duration="0" data-i18n="popupDisablePermanent">Permanently</button>
+              </div>
+            </div>
+          </div>
           <button id="resetStatsBtn" class="btn btn-danger">Reset Stats</button>
         </div>
       </section>

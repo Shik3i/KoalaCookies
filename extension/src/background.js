@@ -13,7 +13,9 @@ const Service = {
   async getSettings() {
     const mode = await Storage.get('mode');
     const whitelist = await Storage.get('whitelist');
-    return { mode, whitelist };
+    const disabledUntil = await Storage.get('disabledUntil');
+    Storage._cleanExpiredDisables(disabledUntil);
+    return { mode, whitelist, disabledUntil };
   },
 
   async setMode(mode) {
@@ -28,7 +30,37 @@ const Service = {
     }
   },
 
-  async removeFromWhitelist(domain) {
+  async disableDomain(domain, durationMs) {
+    if (!durationMs) {
+      return await Service.addToWhitelist(domain);
+    }
+
+    const whitelist = await Storage.get('whitelist');
+    const wlIdx = whitelist.indexOf(domain);
+    if (wlIdx !== -1) {
+      whitelist.splice(wlIdx, 1);
+      await Storage.set('whitelist', whitelist);
+    }
+
+    const disabledUntil = await Storage.get('disabledUntil');
+    disabledUntil[domain] = Date.now() + durationMs;
+    await Storage.set('disabledUntil', disabledUntil);
+  },
+
+  async enableDomain(domain) {
+    const whitelist = await Storage.get('whitelist');
+    const wlIdx = whitelist.indexOf(domain);
+    if (wlIdx !== -1) {
+      whitelist.splice(wlIdx, 1);
+      await Storage.set('whitelist', whitelist);
+    }
+
+    const disabledUntil = await Storage.get('disabledUntil');
+    if (disabledUntil[domain]) {
+      delete disabledUntil[domain];
+      await Storage.set('disabledUntil', disabledUntil);
+    }
+  },
     const whitelist = await Storage.get('whitelist');
     const index = whitelist.indexOf(domain);
     if (index !== -1) {
@@ -53,7 +85,9 @@ const Service = {
     const stats = await Storage.getStats();
     const mode = await Storage.get('mode');
     const whitelist = await Storage.get('whitelist');
-    return { stats, settings: { mode, whitelist } };
+    const disabledUntil = await Storage.get('disabledUntil');
+    Storage._cleanExpiredDisables(disabledUntil);
+    return { stats, settings: { mode, whitelist, disabledUntil } };
   },
 
   async recordBannerResult(domain, action, detail, detectionInfo) {
@@ -222,6 +256,24 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 
+  if (message.type === 'disableDomain') {
+    Service.disableDomain(message.domain, message.durationMs || 0).then(() => {
+      sendResponse({ success: true });
+    }).catch(e => {
+      sendResponse({ success: false, error: e.message });
+    });
+    return true;
+  }
+
+  if (message.type === 'enableDomain') {
+    Service.enableDomain(message.domain).then(() => {
+      sendResponse({ success: true });
+    }).catch(e => {
+      sendResponse({ success: false, error: e.message });
+    });
+    return true;
+  }
+
   if (message.type === 'removeFromWhitelist') {
     Service.removeFromWhitelist(message.domain).then(() => {
       sendResponse({ success: true });
@@ -353,5 +405,10 @@ chrome.runtime.onInstalled.addListener(async () => {
   const existingWhitelist = await Storage.get('whitelist');
   if (!Array.isArray(existingWhitelist)) {
     await Storage.set('whitelist', []);
+  }
+
+  const existingDisabled = await Storage.get('disabledUntil');
+  if (!existingDisabled || typeof existingDisabled !== 'object' || Array.isArray(existingDisabled)) {
+    await Storage.set('disabledUntil', {});
   }
 });
