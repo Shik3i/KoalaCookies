@@ -26,7 +26,7 @@ node -e "
 const manifest = require('$FIREFOX_BUILD_DIR/manifest.json');
 manifest.browser_specific_settings = {
   gecko: {
-    id: 'koalacookies@example.com',
+    id: 'koalacookies@github.com',
     strict_min_version: '109.0'
   }
 };

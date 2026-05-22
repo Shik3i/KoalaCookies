@@ -12,20 +12,15 @@ KoalaCookies ist eine Browser-Erweiterung nach dem Manifest V3 Standard. Sie bes
 │  │   Popup UI   │    │  Background  │    │ Content Script│  │
 │  │              │    │    Service   │    │               │  │
 │  │  popup.html  │◄──►│   Worker     │◄──►│ content.js    │  │
-│  │  popup.js    │    │              │    │ detector.js   │  │
-│  │  popup.css   │    │ background.js│    │ clicker.js    │  │
-│  └──────────────┘    └──────┬───────┘    └───────┬───────┘  │
-│                              │                     │         │
+│  │  popup.js    │    │              │    │ storage.js    │  │
+│  │  popup.css   │    │ background.js│    │ selectors.js  │  │
+│  └──────────────┘    └──────┬───────┘    │ clicker.js    │  │
+│                              │            └───────┬───────┘  │
 │                      ┌───────┴───────┐             │         │
 │                      │  Storage API  │◄────────────┘         │
 │                      │               │                       │
 │                      │  chrome.storage│                      │
 │                      │    .local     │                       │
-│                      └───────────────┘                       │
-│                                                              │
-│                      ┌───────────────┐                       │
-│                      │  stats.js     │                       │
-│                      │  storage.js   │                       │
 │                      └───────────────┘                       │
 └─────────────────────────────────────────────────────────────┘
           │                                          │
@@ -47,12 +42,12 @@ KoalaCookies ist eine Browser-Erweiterung nach dem Manifest V3 Standard. Sie bes
 
 **Lebenszyklus:**
 1. Wird beim Laden einer Seite injiziert (`document_idle`)
-2. `detector.js` scannt das DOM nach Cookie-Bannern
+2. `selectors.js` stellt `detectBanner()` bereit, das nach Cookie-Bannern scannt
 3. Bei Treffer: `clicker.js` sucht nach "Reject All" Buttons
 4. Ergebnis wird per `chrome.runtime.sendMessage()` an Background gesendet
-5. `stats.js` aktualisiert und persistiert die Statistik
+5. `storage.js` aktualisiert und persistiert die Statistik via `chrome.storage.local`
 
-**Erkennungsstrategien (`detector.js`):**
+**Erkennungsstrategien (`selectors.js`):**
 - **Keyword-Scan:** Durchsucht sichtbare Textknoten nach typischen Cookie-Banner-Phrasen (`"cookie"`, `"consent"`, `"datenschutz"`, `"zustimmen"`, etc.)
 - **Selektor-Matching:** Prüft gegen eine Datenbank bekannter CSS-Selektoren:
   ```js
@@ -98,6 +93,7 @@ KoalaCookies ist eine Browser-Erweiterung nach dem Manifest V3 Standard. Sie bes
 - `chrome.tabs.onUpdated` - Verfolgt Seitenwechsel für korrekte Statistik-Zuordnung
 - `chrome.runtime.onInstalled` - Initialisiert Default-Einstellungen
 - `chrome.action.onClicked` - (optional) Direkter Klick auf das Icon
+- `importScripts('storage.js')` - Lädt das Storage-Modul in den Service Worker
 
 **Funktionen:**
 - Statistik-Updates entgegennehmen und aggregieren
@@ -117,6 +113,8 @@ KoalaCookies ist eine Browser-Erweiterung nach dem Manifest V3 Standard. Sie bes
 - Dark Mode (systemabhängig)
 
 ### 4. Storage (`extension/src/storage.js`)
+
+**Kombiniertes Modul:** Enthält sowohl die Storage-Abstraktion als auch die Statistik-Logik. Wird von Content Scripts, Background Service Worker und Popup gemeinsam genutzt.
 
 **Datenmodell:**
 ```json
@@ -143,7 +141,7 @@ KoalaCookies ist eine Browser-Erweiterung nach dem Manifest V3 Standard. Sie bes
 }
 ```
 
-### 5. Selektordatenbank (`extension/src/selectors.js`)
+### 5. Selektordatenbank (in `extension/src/selectors.js`)
 
 Separierte Datei mit bekannten Cookie-Banner-Selektoren, nach Anbieter kategorisiert:
 

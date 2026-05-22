@@ -44,12 +44,11 @@ KoalaCookies ist eine datenschutzfreundliche, quelloffene Browser-Erweiterung f�
 extension/
 ├── manifest.json          # Extension Manifest (MV3)
 ├── src/
-│   ├── background.js      # Service Worker (Event-Seite)
-│   ├── content.js         # Content Script (DOM-Zugriff)
-│   ├── detector.js        # Banner-Erkennungslogik
-│   ├── clicker.js         # Button-Findungs- und Klicklogik
-│   ├── stats.js           # Statistik-Modul
-│   └── storage.js         # Storage-Abstraktion
+│   ├── background.js      # Service Worker
+│   ├── content.js         # Content Script (Orchestration)
+│   ├── storage.js         # Storage-Abstraktion + Statistiken
+│   ├── selectors.js       # Banner-Erkennung + Selektordatenbank
+│   └── clicker.js         # Button-Findung + Klicklogik
 ├── popup/
 │   ├── popup.html         # Popup-UI
 │   ├── popup.js           # Popup-Logik
