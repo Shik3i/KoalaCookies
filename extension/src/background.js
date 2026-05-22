@@ -163,13 +163,18 @@ const Service = {
       delete disabledUntil[domain];
       await Storage.set('disabledUntil', disabledUntil);
     }
-  },
-    const whitelist = await Storage.get('whitelist');
-    const index = whitelist.indexOf(domain);
-    if (index !== -1) {
-      whitelist.splice(index, 1);
-      await Storage.set('whitelist', whitelist);
-    }
+
+    try {
+      var tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+      for (var i = 0; i < tabs.length; i++) {
+        try {
+          var url = new URL(tabs[i].url);
+          if (url.hostname === domain) {
+            _clearTabState(tabs[i].id);
+          }
+        } catch (e) {}
+      }
+    } catch (e) {}
   },
 
   async resetStats() {
@@ -403,7 +408,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 
   if (message.type === 'removeFromWhitelist') {
-    Service.removeFromWhitelist(message.domain).then(() => {
+    Service.enableDomain(message.domain).then(() => {
       sendResponse({ success: true });
     }).catch(e => {
       sendResponse({ success: false, error: e.message });

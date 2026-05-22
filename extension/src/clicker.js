@@ -215,6 +215,8 @@ function _waitForSettingsPanel(scope, timeoutMs) {
     check();
   });
 }
+
+function hideBanner(bannerResult) {
   if (!bannerResult || !bannerResult.container) return false;
 
   var container = bannerResult.container;
