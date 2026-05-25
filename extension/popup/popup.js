@@ -23,7 +23,10 @@ async function init() {
     if (el.classList.contains('version')) {
       el.textContent = 'v' + manifest.version;
     } else if (el.classList.contains('footer-github')) {
-      el.childNodes[el.childNodes.length - 1].textContent = ' Version ' + manifest.version;
+      var lastChild = el.childNodes[el.childNodes.length - 1];
+      if (lastChild) {
+        lastChild.textContent = ' Version ' + manifest.version;
+      }
     }
   }
 

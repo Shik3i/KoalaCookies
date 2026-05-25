@@ -37,8 +37,8 @@ const Storage = {
     const mode = await this.get('mode');
     const whitelist = await this.get('whitelist');
     const disabledUntil = await this.get('disabledUntil');
-    Storage._cleanExpiredDisables(disabledUntil);
-    return { mode, whitelist, disabledUntil };
+    const cleaned = Storage._cleanExpiredDisables(disabledUntil);
+    return { mode, whitelist, disabledUntil: cleaned };
   },
 
   async getStats() {
@@ -46,9 +46,12 @@ const Storage = {
   },
 
   async addLogEntry(entry) {
-    const log = await this.get('actionLog');
-    log.unshift(entry);
-    await this.set('actionLog', log.slice(0, 10));
+    this._lock = this._lock.then(async () => {
+      const log = await this.get('actionLog');
+      log.unshift(entry);
+      await this.set('actionLog', log.slice(0, 10));
+    }).catch(console.error);
+    return this._lock;
   },
 
   async getActionLog() {
@@ -104,19 +107,66 @@ const Storage = {
     return this._lock;
   },
 
+  async addToWhitelist(domain) {
+    this._lock = this._lock.then(async () => {
+      const whitelist = await this.get('whitelist');
+      if (!whitelist.includes(domain)) {
+        whitelist.push(domain);
+        await this.set('whitelist', whitelist);
+      }
+    }).catch(console.error);
+    return this._lock;
+  },
+
+  async removeFromWhitelist(domain) {
+    this._lock = this._lock.then(async () => {
+      const whitelist = await this.get('whitelist');
+      const idx = whitelist.indexOf(domain);
+      if (idx !== -1) {
+        whitelist.splice(idx, 1);
+        await this.set('whitelist', whitelist);
+      }
+    }).catch(console.error);
+    return this._lock;
+  },
+
+  async setDisabledUntil(domain, timestampMs) {
+    this._lock = this._lock.then(async () => {
+      const disabledUntil = await this.get('disabledUntil');
+      disabledUntil[domain] = timestampMs;
+      await this.set('disabledUntil', disabledUntil);
+    }).catch(console.error);
+    return this._lock;
+  },
+
+  async removeDisabledUntil(domain) {
+    this._lock = this._lock.then(async () => {
+      const disabledUntil = await this.get('disabledUntil');
+      if (disabledUntil[domain]) {
+        delete disabledUntil[domain];
+        await this.set('disabledUntil', disabledUntil);
+      }
+    }).catch(console.error);
+    return this._lock;
+  },
+
   _cleanExpiredDisables(disabledUntil) {
-    if (!disabledUntil) return;
+    if (!disabledUntil) return disabledUntil;
     var now = Date.now();
+    var cleaned = {};
     var changed = false;
     var keys = Object.keys(disabledUntil);
     for (var i = 0; i < keys.length; i++) {
-      if (disabledUntil[keys[i]] <= now) {
-        delete disabledUntil[keys[i]];
+      var key = keys[i];
+      if (disabledUntil[key] > now) {
+        cleaned[key] = disabledUntil[key];
+      } else {
         changed = true;
       }
     }
     if (changed) {
-      this.set('disabledUntil', disabledUntil).catch(function(){});
+      this.set('disabledUntil', cleaned).catch(function(){});
     }
+    return cleaned;
   }
 };

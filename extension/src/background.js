@@ -1,5 +1,5 @@
 try {
-  importScripts('rulesEngine.js', 'selectorMeta.js', 'storage.js');
+  importScripts('rulesEngine.js', 'storage.js');
 } catch (e) {
   console.error('KoalaCookies: Failed to load modules', e);
 }
@@ -50,6 +50,17 @@ chrome.tabs.onRemoved.addListener(function(tabId) {
   _clearTabState(tabId);
 });
 
+setInterval(function() {
+  var now = Date.now();
+  var MAX_AGE = 5 * 60 * 1000;
+  var ids = Object.keys(tabStates);
+  for (var i = 0; i < ids.length; i++) {
+    if (now - tabStates[ids[i]].timestamp > MAX_AGE) {
+      delete tabStates[ids[i]];
+    }
+  }
+}, 60000);
+
 chrome.tabs.onActivated.addListener(function(activeInfo) {
   var state = _getTabState(activeInfo.tabId);
   if (state) {
@@ -73,8 +84,8 @@ const Service = {
     const mode = await Storage.get('mode');
     const whitelist = await Storage.get('whitelist');
     const disabledUntil = await Storage.get('disabledUntil');
-    Storage._cleanExpiredDisables(disabledUntil);
-    return { mode, whitelist, disabledUntil };
+    const cleaned = Storage._cleanExpiredDisables(disabledUntil);
+    return { mode, whitelist, disabledUntil: cleaned };
   },
 
   async setMode(mode) {
@@ -82,27 +93,13 @@ const Service = {
   },
 
   async addToWhitelist(domain) {
-    const whitelist = await Storage.get('whitelist');
-    if (!whitelist.includes(domain)) {
-      whitelist.push(domain);
-      await Storage.set('whitelist', whitelist);
-    }
+    await Storage.addToWhitelist(domain);
     await Service._setActiveTabDisabled(domain);
   },
 
   async enableDomain(domain) {
-    const whitelist = await Storage.get('whitelist');
-    const wlIdx = whitelist.indexOf(domain);
-    if (wlIdx !== -1) {
-      whitelist.splice(wlIdx, 1);
-      await Storage.set('whitelist', whitelist);
-    }
-
-    const disabledUntil = await Storage.get('disabledUntil');
-    if (disabledUntil[domain]) {
-      delete disabledUntil[domain];
-      await Storage.set('disabledUntil', disabledUntil);
-    }
+    await Storage.removeFromWhitelist(domain);
+    await Storage.removeDisabledUntil(domain);
 
     try {
       var tabs = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -122,16 +119,8 @@ const Service = {
       return await Service.addToWhitelist(domain);
     }
 
-    const whitelist = await Storage.get('whitelist');
-    const wlIdx = whitelist.indexOf(domain);
-    if (wlIdx !== -1) {
-      whitelist.splice(wlIdx, 1);
-      await Storage.set('whitelist', whitelist);
-    }
-
-    const disabledUntil = await Storage.get('disabledUntil');
-    disabledUntil[domain] = Date.now() + durationMs;
-    await Storage.set('disabledUntil', disabledUntil);
+    await Storage.removeFromWhitelist(domain);
+    await Storage.setDisabledUntil(domain, Date.now() + durationMs);
 
     await Service._setActiveTabDisabled(domain);
   },
@@ -167,11 +156,11 @@ const Service = {
     const mode = await Storage.get('mode');
     const whitelist = await Storage.get('whitelist');
     const disabledUntil = await Storage.get('disabledUntil');
-    Storage._cleanExpiredDisables(disabledUntil);
-    return { stats, settings: { mode, whitelist, disabledUntil } };
+    const cleaned = Storage._cleanExpiredDisables(disabledUntil);
+    return { stats, settings: { mode, whitelist, disabledUntil: cleaned } };
   },
 
-  async recordBannerResult(domain, action, detail, detectionInfo) {
+  async recordBannerResult(domain, action, detail, detectionInfo, sender) {
     const logInfo = extractLogInfo(detail, action);
     const logEntry = {
       timestamp: new Date().toISOString(),
@@ -289,7 +278,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         provider: message.provider,
         detectionMethod: message.detectionMethod,
         containerInfo: message.containerInfo
-      }
+      },
+      sender
     ).then(() => {
       return Service.getStatsForPopup();
     }).then(stats => {

@@ -131,12 +131,12 @@ async function clickSettingsAndRejectAll(bannerResult) {
 
   settingsBtn.click();
 
+  var closestDialog = container.closest('dialog, [role="dialog"], [role="alertdialog"], .modal, .overlay, .popup, .drawer, .panel, [class*="banner" i], [class*="cookie" i], [class*="consent" i]');
+  var scope = closestDialog || container;
+
   await _waitForSettingsPanel(scope, 5000);
 
   var toggledCount = 0;
-
-  var closestDialog = container.closest('dialog, [role="dialog"], [role="alertdialog"], .modal, .overlay, .popup, .drawer, .panel, [class*="banner" i], [class*="cookie" i], [class*="consent" i]');
-  var scope = closestDialog || container;
 
   var checkboxes = scope.querySelectorAll('input[type="checkbox"]:checked:not([disabled])');
 
